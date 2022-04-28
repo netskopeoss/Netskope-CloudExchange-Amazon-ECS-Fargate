@@ -1,6 +1,6 @@
 
 
-# Deploying Netskope Cloud Exchange using AWS ECS Fargate**
+# Deploying Netskope Cloud Exchange using AWS ECS Fargate
 
 The Netskope Cloud Exchange (CE) provides customers with powerful integration tools to leverage investments across their security posture.
 
@@ -46,8 +46,8 @@ The following prerequisites are required to implement the Netskope Cloud Exchang
 &emsp;&emsp; - [AWS CLI](https://aws.amazon.com/cli/) <br />
 
 
-# Deployment and Configuration Steps
-## Deploying Amazon EFS Filesystem, AWS Custom resource Lambda function, IAM roles and Netskope CE Task Security group using CloudExchangeTemplate.yaml and creating Netskope Cloud Exchange Task Definition.
+## Deployment and Configuration Steps
+### Deploying Amazon EFS Filesystem, AWS Custom resource Lambda function, IAM roles and Netskope CE Task Security group using CloudExchangeTemplate.yaml and creating Netskope Cloud Exchange Task Definition.
 Download the CloudExchangeTemplate.yaml and CloudExchangeTaskDefinition.json to your computer.
 
 **Step 1.1:** **Deploy the CloudFormation Stack on the AWS Security Management account**
