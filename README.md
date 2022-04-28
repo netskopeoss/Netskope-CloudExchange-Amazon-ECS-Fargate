@@ -39,12 +39,12 @@ The following prerequisites are required to implement the Netskope Cloud Exchang
 - Existing Amazon VPC with minimum of two subnets in different Availability Zones and outbound connectivity to the Netskope NewEdge platform, third party applications and partners’ platforms you’re planning to integrate Netskope Cloud Exchange with, as well as with regional endpoint for Amazon S3 for the Custom Resource AWS Lambda function to report it status to Amazon CloudFormations. To enable Netskope Cloud Exchange communicating with external third-party services we recommend deploying [Amazon Nat Gateway](https://docs.aws.amazon.com/vpc/latest/userguide/vpc-nat-gateway.html) in your VPC. 
 - Existing Amazon ECS cluster where Netskope Cloud Exchange task will be running. To learn how to work with Amazon ECS please refer to the [tutorials here](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-tutorials.html). 
 - The latest version of the AWS CLI is installed and configured. For more information about installing or upgrading your AWS CLI, see [Installing the AWS Command Line Interface](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html).
-- This solution guide assumes working knowledge with the AWS management console and AWS CLI. We also recommend that you become familiar with the following AWS services:
-&emsp;&emsp; - [AWS Lambda](https://aws.amazon.com/lambda/)
-&emsp;&emsp; - [Amazon CloudWatch](https://aws.amazon.com/cloudwatch/)
-&emsp;&emsp; - [AWS CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/GettingStarted.html)
-&emsp;&emsp; - [Amazon VPC](https://aws.amazon.com/vpc/)
-&emsp;&emsp; - [AWS CLI](https://aws.amazon.com/cli/)
+- This solution guide assumes working knowledge with the AWS management console and AWS CLI. We also recommend that you become familiar with the following AWS services: <br />
+&emsp;&emsp; - [AWS Lambda](https://aws.amazon.com/lambda/) <br />
+&emsp;&emsp; - [Amazon CloudWatch](https://aws.amazon.com/cloudwatch/) <br />
+&emsp;&emsp; - [AWS CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/GettingStarted.html) <br />
+&emsp;&emsp; - [Amazon VPC](https://aws.amazon.com/vpc/) <br />
+&emsp;&emsp; - [AWS CLI](https://aws.amazon.com/cli/) <br />
 
 
 # Deployment and Configuration Steps
