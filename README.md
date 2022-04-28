@@ -1,7 +1,6 @@
-﻿
 
 
-**Deploying Netskope Cloud Exchange using AWS ECS Fargate**
+# Deploying Netskope Cloud Exchange using AWS ECS Fargate**
 
 The Netskope Cloud Exchange (CE) provides customers with powerful integration tools to leverage investments across their security posture.
 
@@ -55,16 +54,14 @@ Download the CloudExchangeTemplate.yaml and CloudExchangeTaskDefinition.json to 
 
 Sign into the AWS Security Management account as administrator and deploy the Netskope Cloud Exchange CloudFormations stack. 
 
-1.1.1. Navigate to the AWS CloudFormation management console and choose the region you’d like to deploy the automation solutions in the Security Management account. 
-1.1.2. Click **Create Stack** and choose **With new resources (standard)**.
+1.1.1. Navigate to the AWS CloudFormation management console and choose the region you’d like to deploy the automation solutions in the Security Management account. <br />
+1.1.2. Click **Create Stack** and choose **With new resources (standard)**.<br />
 
 ![](.//media/NetskopeCE.09fc7e95-8fc0-4a42-9c93-89f7a36aafbe.002.png)
 
-1.1.3. Choose **Upload a template file** then click on Choose file. Choose the CloudExchangeTemplate.yaml from the directory on your disk where you downloaded it to, click **Open** and then click **Next**.
+1.1.3. Choose **Upload a template file** then click on Choose file. Choose the CloudExchangeTemplate.yaml from the directory on your disk where you downloaded it to, click **Open** and then click **Next**.<br />
 
-![Graphical user interface, text, application, email
-
-Description automatically generated](.//media/NetskopeCE.09fc7e95-8fc0-4a42-9c93-89f7a36aafbe.003.png)
+![](.//media/NetskopeCE.09fc7e95-8fc0-4a42-9c93-89f7a36aafbe.003.png)
 
 1.1.4. Enter the stack name and the parameters for your deployment:
 
@@ -85,9 +82,7 @@ Description automatically generated](.//media/NetskopeCE.09fc7e95-8fc0-4a42-9c93
 
 1.1.7. Acknowledge creating IAM resources and click **Create stack**.
 
-![Graphical user interface, text, application
-
-Description automatically generated](.//media/NetskopeCE.09fc7e95-8fc0-4a42-9c93-89f7a36aafbe.006.png)
+![](.//media/NetskopeCE.09fc7e95-8fc0-4a42-9c93-89f7a36aafbe.006.png)
 
 1.1.8. When CloudFormation stack is in the CREATE\_COMPLETE state, navigate to the Output tab and see the Security Group Id you will need to customize to allow Netskope Cloud Exchange access to the Netskope NewEdge and third-party platforms.
 #### Please follow the instructions in the [IP Allowlisting](https://docs.netskope.com/en/ip-allowlisting.html) article on the Netskope Knowledge Portal to add the Netskope NewEdge IP addresses to the Netskope CE Task Security Group.
