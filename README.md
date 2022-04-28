@@ -49,7 +49,7 @@ The following prerequisites are required to implement the Netskope Cloud Exchang
 
 # Deployment and Configuration Steps
 ## Deploying Amazon EFS Filesystem, AWS Custom resource Lambda function, IAM roles and Netskope CE Task Security group using CloudExchangeTemplate.yaml and creating Netskope Cloud Exchange Task Definition.
-Download the CloudExchangeTemplate.yaml and CloudExchangeTaskDefinition.json to your computer.
+Download the [CloudExchangeTemplate.yaml](./CloudExchangeTemplate.yaml) and [CloudExchangeTaskDefinition.json](./CloudExchangeTaskDefinition.json) to your computer.
 
 **Step 1.1:** **Deploy the CloudFormation Stack on the AWS Security Management account**
 
