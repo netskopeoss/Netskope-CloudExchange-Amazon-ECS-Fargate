@@ -182,5 +182,4 @@ Now you can use the task Private IP address to sign into the Netskope Cloud Exch
 After initial installation Netskope Cloud Exchange is available via HTTP and you can access it via http://*<Task IP address>.* To secure access to the Netskope Cloud Exchange follow the documentation mentioned in the step 1.2.6 above.
 
 For complete documentation on how to use Netskope Cloud Exchange please refer to the [Netskope Cloud Exchange documentation](https://docs.netskope.com/en/netskope-cloud-exchange.html). 
-![](.//media/NetskopeCE.09fc7e95-8fc0-4a42-9c93-89f7a36aafbe.017.png)
 
