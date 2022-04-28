@@ -76,9 +76,7 @@ Sign into the AWS Security Management account as administrator and deploy the Ne
 1.1.5. Click **Next**.
 1.1.6. Optionally, enter the Tags for your CloudFormation stack and / or click Next.
 
-![Graphical user interface, application
-
-Description automatically generated](.//media/NetskopeCE.09fc7e95-8fc0-4a42-9c93-89f7a36aafbe.005.png)
+![](.//media/NetskopeCE.09fc7e95-8fc0-4a42-9c93-89f7a36aafbe.005.png)
 
 1.1.7. Acknowledge creating IAM resources and click **Create stack**.
 
