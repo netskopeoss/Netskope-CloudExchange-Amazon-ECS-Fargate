@@ -1,0 +1,358 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+Description: "CloudExchange 3.0"
+Metadata: 
+  AWS::CloudFormation::Interface: 
+    ParameterGroups: 
+      - 
+        Label: 
+          default: "Existing VPC info"
+        Parameters: 
+          - VPCId
+          - PrivateSubnet1ID
+          - PrivateSubnet2ID
+    ParameterLabels: 
+      VPCId:
+        default: 'Existing VPC Id'
+      PrivateSubnet1ID:
+        default: 'Existing Private Subnet ID 1'
+      PrivateSubnet2ID:
+        default: 'Existing Private Subnet ID 2'
+Parameters:
+  VPCId:
+    Type: AWS::EC2::VPC::Id
+    Default: ''
+    Description: 'Enter the existing VPC Id where Netskope Cloud Exchange will be deployed. '
+  PrivateSubnet1ID:
+    Type: AWS::EC2::Subnet::Id
+    Default: ''
+    Description: 'Enter the first Subnet ID where the EFS filesystem for Netskope Cloud Exchange will be deployed. Note that custom resource Lambda function in this stack should be able to communicate from this subnet to Amazon S3 regional endpoint'
+  PrivateSubnet2ID:
+    Type: AWS::EC2::Subnet::Id
+    Default: ''
+    Description: 'Enter the second Subnet ID where the EFS filesystem for Netskope Cloud Exchange will be deployed. Note that custom resource Lambda function in this stack should be able to communicate from this subnet to Amazon S3 regional endpoint'
+    
+Resources:
+  NetskopeCloudExchangeTaskExecutionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: 'NetskopeCloudExchangeTaskExecutionRole'
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - ecs-tasks.amazonaws.com
+      Path: /
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy'
+
+  NetskopeCloudExchangeTaskRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: 'NetskopeCloudExchangeTaskRole'
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - ecs-tasks.amazonaws.com
+      Path: /
+      Policies:
+        - PolicyName: 'NetskopeCloudExchangeTaskPolicy'
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "elasticfilesystem:ClientMount"
+                  - "elasticfilesystem:ClientWrite"
+                Resource: '*'
+  
+  TaskSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: !Ref VPCId
+      GroupDescription: Used by Netskope CloudExchange ECS task
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 3000
+          ToPort: 3000
+          CidrIp: '169.254.255.255/32'
+      SecurityGroupEgress:
+        - IpProtocol: tcp
+          FromPort: 2049
+          ToPort: 2049
+          CidrIp: '0.0.0.0/0'
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: '0.0.0.0/0'
+
+  NetskopeCloudExchangeEFSSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: !Ref VPCId
+      GroupDescription: Grants EFS access to the VPC subnets
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 2049
+          ToPort: 2049
+          SourceSecurityGroupId: !Ref TaskSecurityGroup
+  NetskopeCloudExchangeEFS:
+    Type: 'AWS::EFS::FileSystem'
+    DependsOn: NetskopeCloudExchangeTaskRole
+    Properties:
+      BackupPolicy:
+        Status: ENABLED
+      Encrypted: true
+      FileSystemTags:
+        - Key: Name
+          Value: NetskopeCloudExchange
+      FileSystemPolicy:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Action:
+              - "elasticfilesystem:ClientMount"
+              - "elasticfilesystem:ClientWrite"
+            Principal:
+              AWS: !Sub 'arn:aws:iam::${AWS::AccountId}:role/NetskopeCloudExchangeTaskRole'
+            Condition:
+              Bool:
+                'aws:SecureTransport': true
+
+  MountTargetResource1:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref NetskopeCloudExchangeEFS
+      SubnetId: !Ref PrivateSubnet1ID
+      SecurityGroups:
+      - !Ref NetskopeCloudExchangeEFSSecurityGroup
+
+  MountTargetResource2:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref NetskopeCloudExchangeEFS
+      SubnetId: !Ref PrivateSubnet2ID
+      SecurityGroups:
+      - !Ref NetskopeCloudExchangeEFSSecurityGroup
+
+  MongoDBAccessPoint:
+    Type: 'AWS::EFS::AccessPoint'
+    Properties:
+      FileSystemId: !Ref NetskopeCloudExchangeEFS
+      PosixUser:
+          Uid: "0"
+          Gid: "0"
+      RootDirectory:
+        Path: "/data/mongo-data"
+        CreationInfo:
+          OwnerGid: "0"
+          OwnerUid: "0"
+          Permissions: "0777"
+  SSLCertAccessPoint:
+    Type: 'AWS::EFS::AccessPoint'
+    Properties:
+      FileSystemId: !Ref NetskopeCloudExchangeEFS
+      PosixUser:
+          Uid: "0"
+          Gid: "0"
+      RootDirectory:
+        Path: "/data/ssl_certs"
+        CreationInfo:
+          OwnerGid: "0"
+          OwnerUid: "0"
+          Permissions: "0777"
+  CustomPluginsAccessPoint:
+    Type: 'AWS::EFS::AccessPoint'
+    Properties:
+      FileSystemId: !Ref NetskopeCloudExchangeEFS
+      PosixUser:
+          Uid: "0"
+          Gid: "0"
+      RootDirectory:
+        Path: "/data/custom_plugins"
+        CreationInfo:
+          OwnerGid: "0"
+          OwnerUid: "0"
+          Permissions: "0777"
+  RabbitMQAccessPoint:
+    Type: 'AWS::EFS::AccessPoint'
+    Properties:
+      FileSystemId: !Ref NetskopeCloudExchangeEFS
+      PosixUser:
+          Uid: "0"
+          Gid: "0"
+      RootDirectory:
+        Path: "/data/rabbitmq"
+        CreationInfo:
+          OwnerGid: "0"
+          OwnerUid: "0"
+          Permissions: "0777"
+  DataAccessPoint:
+    Type: 'AWS::EFS::AccessPoint'
+    Properties:
+      FileSystemId: !Ref NetskopeCloudExchangeEFS
+      PosixUser:
+          Uid: "0"
+          Gid: "0"
+      RootDirectory:
+        Path: "/data"
+        CreationInfo:
+          OwnerGid: "0"
+          OwnerUid: "0"
+          Permissions: "0777"
+
+  NetskopeCloudExchangecustomResourceLFRole:
+      Type: 'AWS::IAM::Role'
+      Properties: 
+        RoleName: 'NetskopeCloudExchangecustomResourceLFRole'
+        Tags: 
+          - Key: Type
+            Value: NetskopeCloudExchangecustomResourceLFRole
+        AssumeRolePolicyDocument:
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service:
+                  - lambda.amazonaws.com
+              Action:
+                - sts:AssumeRole
+        Path: '/'
+        Policies:
+            - PolicyName: 'NetskopeCloudExchangecustomResourceLFPolicy'
+              PolicyDocument:
+                Statement:
+                  - Effect: Allow
+                    Action:
+                      - "logs:CreateLogGroup"
+                      - "logs:CreateLogStream"
+                      - "logs:PutLogEvents"
+                    Resource:
+                      - "*"
+                  - Effect: Allow
+                    Action:
+                      - "elasticfilesystem:ClientMount"
+                      - "elasticfilesystem:ClientWrite"
+                    Resource:
+                      - !GetAtt NetskopeCloudExchangeEFS.Arn
+                  - Effect: Allow
+                    Action:
+                      - 'ec2:CreateNetworkInterface'
+                      - 'ec2:DeleteNetworkInterface'
+                      - 'ec2:AssignPrivateIpAddresses'
+                      - 'ec2:UnassignPrivateIpAddresses'
+                      - 'ec2:DescribeNetworkInterfaces'
+                    Resource: 
+                      - "*"
+                          
+  NetskopeCloudExchangecustomResourceLF:
+      Type: 'AWS::Lambda::Function'
+      DependsOn: 
+        - RabbitMQAccessPoint
+        - MongoDBAccessPoint
+        - CustomPluginsAccessPoint
+        - SSLCertAccessPoint
+        - MountTargetResource1
+        - MountTargetResource2
+        - NetskopeCloudExchangeEFS
+      Properties:
+        Description: >-
+          This is custom resource lambda function creating directory structure on EFS.
+        Handler: index.handler
+        Role: !GetAtt 
+          - NetskopeCloudExchangecustomResourceLFRole
+          - Arn
+        Runtime: python3.8
+        Timeout: 60
+        Code:
+          ZipFile: |
+            import json
+            import os
+            import glob
+            from pathlib import Path
+            from botocore.exceptions import ClientError
+            import logging
+            import cfnresponse
+
+            logger = logging.getLogger()
+            logger.setLevel(logging.INFO)
+           
+            def handler(event, context):
+              logger.info("Received event: " + json.dumps(event, indent=2))
+              responseData={'Status':'SUCCESS'}
+              try:
+                  if event['RequestType'] == 'Delete':
+                      logger.info("Request Type: "+event['RequestType'])
+                      logger.info("Nothing to do on delete. Sending response to custom resource after Delete")
+                  elif event['RequestType'] == 'Create' or event['RequestType'] == 'Update':
+                      logger.info("Request Type: " + event['RequestType'])
+                      create_dir_structure()
+                      logger.info("Sending response to custom resource")
+                  responseStatus = 'SUCCESS'
+              except Exception as e:
+                  logger.info('Failed to process: ' + e)
+                  responseStatus = 'FAILED'
+                  responseData = {'Failure': 'Something bad happened.'}
+              cfnresponse.send(event, context, responseStatus, responseData)
+
+
+            def create_dir_structure():
+                if os.path.exists('/mnt/data/rabbitmq/custom.conf'):
+                  logger.info("File custom.conf rabbitmq already exists")
+                else: 
+                  if os.path.exists('/mnt/data/rabbitmq'):
+                    logger.info("Directory rabbitmq already exists")
+                  else:
+                    os.mkdir("/mnt/data/rabbitmq")
+                  logger.info("Creating file custom.conf")
+                  f = open("/mnt/data/rabbitmq/custom.conf", "w")
+                  f.write("consumer_timeout = 86400000\n")
+                  f.write("disk_free_limit.absolute = 2GB\n")
+                  f.close()
+                return 0
+
+        Runtime: python3.6
+        Tags: 
+          - Key: Type
+            Value: NetskopeCloudExchangecustomResourceLF
+        VpcConfig:
+          SecurityGroupIds:
+            - !Ref TaskSecurityGroup
+          SubnetIds:
+            - !Ref PrivateSubnet1ID
+        FileSystemConfigs:
+          - Arn: !GetAtt DataAccessPoint.Arn
+            LocalMountPath: /mnt/data
+        
+  NetskopeCloudExchangecustomResourceLFTrigger:
+    Type: 'Custom::LambdaTrigger'
+    Properties:
+      ServiceToken: !GetAtt NetskopeCloudExchangecustomResourceLF.Arn
+Outputs:
+  NetskopeCloudExchangeEFS:
+    Value: !Ref NetskopeCloudExchangeEFS
+    Description: EFS filesystem for Netskope Cloud Exchange
+  MongoDBAccessPoint:
+    Value: !Ref MongoDBAccessPoint
+    Description: Mongo DB Access Point
+  SSLCertAccessPoint:
+    Value: !Ref SSLCertAccessPoint
+    Description: SSL Certs Access Point
+  CustomPluginsAccessPoint:
+    Value: !Ref CustomPluginsAccessPoint
+    Description: Custom Plugins Access Point
+  RabbitMQAccessPoint:
+    Value: !Ref RabbitMQAccessPoint
+    Description: RabbitMQ Access Point
+
+  TaskSecurityGroup:
+    Value: !Ref TaskSecurityGroup
+    Description: Security Group for Netskope CloudExchange ECS task
+  
