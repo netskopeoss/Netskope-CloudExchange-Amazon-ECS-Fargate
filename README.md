@@ -28,7 +28,7 @@ CloudExchangeTaskDefinition.json Task Definition json file used to create a new 
 
 Architecture diagram
 
-![](./media/NetskopeCE.09fc7e95-8fc0-4a42-9c93-89f7a36aafbe.001.png)
+![](.//media/NetskopeCE.09fc7e95-8fc0-4a42-9c93-89f7a36aafbe.001.png)
 
 *Fig 1. Netskope Cloud Exchange on AWS Fargate for Amazon ECS*
 
@@ -49,58 +49,57 @@ The following prerequisites are required to implement the Netskope Cloud Exchang
 
 # Deployment and Configuration Steps
 ## Deploying Amazon EFS Filesystem, AWS Custom resource Lambda function, IAM roles and Netskope CE Task Security group using CloudExchangeTemplate.yaml and creating Netskope Cloud Exchange Task Definition.
-Download the [CloudExchangeTemplate.yaml](./CloudExchangeTemplate.yaml) and [CloudExchangeTaskDefinition.json](./CloudExchangeTaskDefinition.json) to your computer.
+Download the CloudExchangeTemplate.yaml and CloudExchangeTaskDefinition.json to your computer.
 
 **Step 1.1:** **Deploy the CloudFormation Stack on the AWS Security Management account**
 
 Sign into the AWS Security Management account as administrator and deploy the Netskope Cloud Exchange CloudFormations stack. 
 
-1. Navigate to the AWS CloudFormation management console and choose the region you’d like to deploy the automation solutions in the Security Management account. 
-1. Click **Create Stack** and choose **With new resources (standard)**.
+1.1.1. Navigate to the AWS CloudFormation management console and choose the region you’d like to deploy the automation solutions in the Security Management account. 
+1.1.2. Click **Create Stack** and choose **With new resources (standard)**.
 
-![Graphical user interface, application, Teams
+![](.//media/NetskopeCE.09fc7e95-8fc0-4a42-9c93-89f7a36aafbe.002.png)
 
-Description automatically generated](./media/NetskopeCE.09fc7e95-8fc0-4a42-9c93-89f7a36aafbe.002.png)
-
-1. Choose **Upload a template file** then click on Choose file. Choose the CloudExchangeTemplate.yaml from the directory on your disk where you downloaded it to, click **Open** and then click **Next**.
+1.1.3. Choose **Upload a template file** then click on Choose file. Choose the CloudExchangeTemplate.yaml from the directory on your disk where you downloaded it to, click **Open** and then click **Next**.
 
 ![Graphical user interface, text, application, email
 
-Description automatically generated](./media/NetskopeCE.09fc7e95-8fc0-4a42-9c93-89f7a36aafbe.003.png)
+Description automatically generated](.//media/NetskopeCE.09fc7e95-8fc0-4a42-9c93-89f7a36aafbe.003.png)
 
-1. Enter the stack name and the parameters for your deployment:
+1.1.4. Enter the stack name and the parameters for your deployment:
 
 |Existing VPC Id|Enter the existing VPC Id where Netskope Cloud Exchange will be deployed|
 | :- | :- |
 |Existing Private Subnet ID 1|Enter the first Subnet ID where the EFS filesystem for Netskope Cloud Exchange will be deployed. Note that custom resource Lambda function in this stack should be able to communicate from this subnet to Amazon S3 regional endpoint|
 |Existing Private Subnet ID 2 |Enter the second Subnet ID where the EFS filesystem for Netskope Cloud Exchange will be deployed. Note that custom resource Lambda function in this stack should be able to communicate from this subnet to Amazon S3 regional endpoint|
 
-![](./media/NetskopeCE.09fc7e95-8fc0-4a42-9c93-89f7a36aafbe.004.png)
+![](.//media/NetskopeCE.09fc7e95-8fc0-4a42-9c93-89f7a36aafbe.004.png)
 
-1. Click **Next**.
-1. Optionally, enter the Tags for your CloudFormation stack and / or click Next.
+
+1.1.5. Click **Next**.
+1.1.6. Optionally, enter the Tags for your CloudFormation stack and / or click Next.
 
 ![Graphical user interface, application
 
-Description automatically generated](./media/NetskopeCE.09fc7e95-8fc0-4a42-9c93-89f7a36aafbe.005.png)
+Description automatically generated](.//media/NetskopeCE.09fc7e95-8fc0-4a42-9c93-89f7a36aafbe.005.png)
 
-1. Acknowledge creating IAM resources and click **Create stack**.
+1.1.7. Acknowledge creating IAM resources and click **Create stack**.
 
 ![Graphical user interface, text, application
 
-Description automatically generated](./media/NetskopeCE.09fc7e95-8fc0-4a42-9c93-89f7a36aafbe.006.png)
+Description automatically generated](.//media/NetskopeCE.09fc7e95-8fc0-4a42-9c93-89f7a36aafbe.006.png)
 
-1. When CloudFormation stack is in the CREATE\_COMPLETE state, navigate to the Output tab and see the Security Group Id you will need to customize to allow Netskope Cloud Exchange access to the Netskope NewEdge and third-party platforms.
+1.1.8. When CloudFormation stack is in the CREATE\_COMPLETE state, navigate to the Output tab and see the Security Group Id you will need to customize to allow Netskope Cloud Exchange access to the Netskope NewEdge and third-party platforms.
 #### Please follow the instructions in the [IP Allowlisting](https://docs.netskope.com/en/ip-allowlisting.html) article on the Netskope Knowledge Portal to add the Netskope NewEdge IP addresses to the Netskope CE Task Security Group.
 
 
-![](./media/NetskopeCE.09fc7e95-8fc0-4a42-9c93-89f7a36aafbe.007.png)
+![](.//media/NetskopeCE.09fc7e95-8fc0-4a42-9c93-89f7a36aafbe.007.png)
 
-1. Note the EFS File System Id in the CloudFormation  stack output. It’ll be used late on while creating the Netskope Cloud Exchange Task Definition for Amazon ECS.
+1.1.9. Note the EFS File System Id in the CloudFormation  stack output. It’ll be used late on while creating the Netskope Cloud Exchange Task Definition for Amazon ECS.
 
 **Step 1.2: Create Netskope Cloud Exchange Task Definition:**
 
-1. Open the CloudExchangeTaskDefinition.json file for editing and replace all occurrences of the following values as following:
+1.2.1. Open the CloudExchangeTaskDefinition.json file for editing and replace all occurrences of the following values as following:
 
 |/\*AWS Region\*/|AWS Region where you’re deploring the AWS Cloud Exchange. For example, us-east-2|
 | :- | :- |
@@ -109,7 +108,7 @@ Description automatically generated](./media/NetskopeCE.09fc7e95-8fc0-4a42-9c93-
 
 
 
-1. Using AWS CLI, create a new Amazon ECS Task Definition for Netskope Cloud Exchange:
+1.2.2. Using AWS CLI, create a new Amazon ECS Task Definition for Netskope Cloud Exchange:
 
 aws ecs register-task-definition --family NetskopeCloudExhange3-0 --cli-input-json file://CloudExchangeTaskDefinition.json
 
@@ -121,15 +120,15 @@ You can use the Netskope Cloud Exchange Task Definition to deploy AWS Fargate Ta
 **Step 2.1:** **Run Netskope Cloud Exchange as a service using AWS Fargate on Amazon ECS**
 
 
-1. Sign into Amazon ECS management console and navigate to Task Definitions and choose NetskopeCloudExchange3-0 task
+2.1.1. Sign into Amazon ECS management console and navigate to Task Definitions and choose NetskopeCloudExchange3-0 task
 
-![](./media/NetskopeCE.09fc7e95-8fc0-4a42-9c93-89f7a36aafbe.008.png)
+![](.//media/NetskopeCE.09fc7e95-8fc0-4a42-9c93-89f7a36aafbe.008.png)
 
-1. Click on Actions->Create Service
+2.1.2. Click on Actions->Create Service
 
-![](./media/NetskopeCE.09fc7e95-8fc0-4a42-9c93-89f7a36aafbe.009.png)
+![](.//media/NetskopeCE.09fc7e95-8fc0-4a42-9c93-89f7a36aafbe.009.png)
 
-1. Set the following configuration for the new service:
+2.1.3. Set the following configuration for the new service:
 
 
 |<p>**Launch type**</p><p></p>|Fargate|
@@ -146,13 +145,11 @@ You can use the Netskope Cloud Exchange Task Definition to deploy AWS Fargate Ta
 
 Leave other parameters unchanged and click Next step
 
-![Graphical user interface, application
+![](.//media/NetskopeCE.09fc7e95-8fc0-4a42-9c93-89f7a36aafbe.010.png)
 
-Description automatically generated](./media/NetskopeCE.09fc7e95-8fc0-4a42-9c93-89f7a36aafbe.010.png)
+![](.//media/NetskopeCE.09fc7e95-8fc0-4a42-9c93-89f7a36aafbe.011.png)
 
-![](./media/NetskopeCE.09fc7e95-8fc0-4a42-9c93-89f7a36aafbe.011.png)
-
-1. Choose the same VPC and VPC Subnets you used to create an EFS File System using CloudExchangeTemplate.yaml.
+2.1.4. Choose the same VPC and VPC Subnets you used to create an EFS File System using CloudExchangeTemplate.yaml.
 
 Choose the security group you noted in the step 1.1.8 above and click Next step.
 
@@ -165,30 +162,19 @@ To enable Netskope Cloud Exchange communicating with external third-party servic
 
 
 
+![](.//media/NetskopeCE.09fc7e95-8fc0-4a42-9c93-89f7a36aafbe.012.png)
+
+![](.//media/NetskopeCE.09fc7e95-8fc0-4a42-9c93-89f7a36aafbe.013.png)
+
+2.1.5. Leave Set Auto Scaling unchanged and click Next step
+
+![](.//media/NetskopeCE.09fc7e95-8fc0-4a42-9c93-89f7a36aafbe.014.png)
+
+2.1.6. Review the configuration and click Create service
+2.1.7. To monitor the task status, navigate to Clusters->your ECS cluster->Tasks menu
 
 
-
-![Graphical user interface, text, application, email
-
-Description automatically generated](./media/NetskopeCE.09fc7e95-8fc0-4a42-9c93-89f7a36aafbe.012.png)
-
-![Graphical user interface, text, application, email
-
-Description automatically generated](./media/NetskopeCE.09fc7e95-8fc0-4a42-9c93-89f7a36aafbe.013.png)
-
-1. Leave Set Auto Scaling unchanged and click Next step
-
-![Graphical user interface, text, application, email
-
-Description automatically generated](./media/NetskopeCE.09fc7e95-8fc0-4a42-9c93-89f7a36aafbe.014.png)
-
-1. Review the configuration and click Create service
-1. To monitor the task status, navigate to Clusters->your ECS cluster->Tasks menu
-
-
-![Graphical user interface, application
-
-Description automatically generated](./media/NetskopeCE.09fc7e95-8fc0-4a42-9c93-89f7a36aafbe.015.png)
+![](.//media/NetskopeCE.09fc7e95-8fc0-4a42-9c93-89f7a36aafbe.015.png)
 
 and click on the NetskopeCloudExchange task.
 
@@ -196,18 +182,12 @@ Wait till the task status will be RUNNING with all four containers HEALTHY.
 
 
 
-![Table
-
-Description automatically generated](./media/NetskopeCE.09fc7e95-8fc0-4a42-9c93-89f7a36aafbe.016.png)
+![](.//media/NetskopeCE.09fc7e95-8fc0-4a42-9c93-89f7a36aafbe.016.png)
 
 Now you can use the task Private IP address to sign into the Netskope Cloud Exchange. 
 
 After initial installation Netskope Cloud Exchange is available via HTTP and you can access it via http://*<Task IP address>.* To secure access to the Netskope Cloud Exchange follow the documentation mentioned in the step 1.2.6 above.
 
 For complete documentation on how to use Netskope Cloud Exchange please refer to the [Netskope Cloud Exchange documentation](https://docs.netskope.com/en/netskope-cloud-exchange.html). 
-![A sign in the dark
-
-Description automatically generated](./media/NetskopeCE.09fc7e95-8fc0-4a42-9c93-89f7a36aafbe.017.png)
-
-Page  of 
+![](.//media/NetskopeCE.09fc7e95-8fc0-4a42-9c93-89f7a36aafbe.017.png)
 
