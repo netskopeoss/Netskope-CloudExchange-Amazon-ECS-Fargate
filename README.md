@@ -31,7 +31,7 @@ Architecture diagram
 
 *Fig 1. Netskope Cloud Exchange on AWS Fargate for Amazon ECS*
 
-Prerequisites 
+## Prerequisites 
 
 The following prerequisites are required to implement the Netskope Cloud Exchange on AWS Fargate for Amazon ECS:
 
