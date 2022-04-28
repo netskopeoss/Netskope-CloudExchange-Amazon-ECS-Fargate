@@ -40,11 +40,11 @@ The following prerequisites are required to implement the Netskope Cloud Exchang
 - Existing Amazon ECS cluster where Netskope Cloud Exchange task will be running. To learn how to work with Amazon ECS please refer to the [tutorials here](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-tutorials.html). 
 - The latest version of the AWS CLI is installed and configured. For more information about installing or upgrading your AWS CLI, see [Installing the AWS Command Line Interface](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html).
 - This solution guide assumes working knowledge with the AWS management console and AWS CLI. We also recommend that you become familiar with the following AWS services:
--- [AWS Lambda](https://aws.amazon.com/lambda/)
-- [Amazon CloudWatch](https://aws.amazon.com/cloudwatch/)
-- [AWS CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/GettingStarted.html)
-- [Amazon VPC](https://aws.amazon.com/vpc/)
-- [AWS CLI](https://aws.amazon.com/cli/)
+&emsp;&emsp - [AWS Lambda](https://aws.amazon.com/lambda/)
+&emsp;&emsp - [Amazon CloudWatch](https://aws.amazon.com/cloudwatch/)
+&emsp;&emsp - [AWS CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/GettingStarted.html)
+&emsp;&emsp - [Amazon VPC](https://aws.amazon.com/vpc/)
+&emsp;&emsp - [AWS CLI](https://aws.amazon.com/cli/)
 
 
 # Deployment and Configuration Steps
