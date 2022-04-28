@@ -25,7 +25,7 @@ CloudExchangeTemplate.yaml AWS CloudFormation template that deploys the followin
 
 CloudExchangeTaskDefinition.json Task Definition json file used to create a new task definition for the Netskope Cloud Exchange
 
-Architecture diagram
+## Architecture diagram
 
 ![](.//media/NetskopeCE.09fc7e95-8fc0-4a42-9c93-89f7a36aafbe.001.png)
 
