@@ -103,7 +103,9 @@ Sign into the AWS Security Management account as administrator and deploy the Ne
 
 1.2.2. Using AWS CLI, create a new Amazon ECS Task Definition for Netskope Cloud Exchange:
 
+```
 aws ecs register-task-definition --family NetskopeCloudExhange3-0 --cli-input-json file://CloudExchangeTaskDefinition.json
+```
 
 
 ## Deploying Netskope Cloud Exchange AWS Fargate task on Amazon ECS.
