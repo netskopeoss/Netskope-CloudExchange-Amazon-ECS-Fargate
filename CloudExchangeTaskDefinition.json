@@ -1,308 +1,324 @@
 {
-  
-  "executionRoleArn": "arn:aws:iam::/*AWS Account ID*/:role/NetskopeCloudExchangeTaskExecutionRole",
-  "containerDefinitions": [
-    {
-      
-      "logConfiguration": {
-        "logDriver": "awslogs",
-        
-        "options": {
-          "awslogs-group": "/aws/ecs/Netskope-Cloud-Exchange-3-0",
-          "awslogs-region": "/*AWS Region*/",
-          "awslogs-stream-prefix": "Netskope"
-        }
-      },
-      
-      "portMappings": [
-        {
-          "hostPort": 27017,
-          "protocol": "tcp",
-          "containerPort": 27017
-        }
-      ],
-      "command": [],
-      "cpu": 0,
-      "environment": [
-        {
-          "name": "MONGODB_DATABASE",
-          "value": "cte"
-        },
-        {
-          "name": "MONGODB_PASSWORD",
-          "value": "cteadmin"
-        },
-        {
-          "name": "MONGODB_ROOT_PASSWORD",
-          "value": "password123"
-        },
-        {
-          "name": "MONGODB_USERNAME",
-          "value": "cteadmin"
-        }
-      ],
-      "mountPoints": [
-        {
-          "readOnly": false,
-          "containerPath": "/data/bitnami/mongodb",
-          "sourceVolume": "mongo-data"
-        }
-      ],
-      "volumesFrom": [],
-      "image": "bitnami/mongodb:4.4",
-      
-      "healthCheck": {
-        "retries": 3,
-        "command": [
-          "CMD-SHELL",
-          "if mongo --quiet cte --eval 'quit(db.runCommand({ ping: 1 }).ok ? 0 : 2)'; then exit 0; fi; exit 1;"
+         "containerDefinitions": [
+            {
+                "name": "mongodb-primary",
+                "image": "709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/mongodb:050922",
+                "cpu": 0,
+                "portMappings": [
+                    {
+                        "containerPort": 27017,
+                        "hostPort": 27017,
+                        "protocol": "tcp"
+                    }
+                ],
+                "essential": true,
+                "command": [],
+                "environment": [
+                    {
+                        "name": "MONGODB_SYSTEM_LOG_VERBOSITY",
+                        "value": "5"
+                    },
+                    {
+                        "name": "MONGODB_DATABASE",
+                        "value": "cte"
+                    },
+                    {
+                        "name": "MONGODB_ROOT_PASSWORD",
+                        "value": "password123"
+                    },
+                    {
+                        "name": "MONGODB_ADVERTISED_HOSTNAME",
+                        "value": "localhost"
+                    },
+                    {
+                        "name": "MONGODB_PASSWORD",
+                        "value": "cteadmin"
+                    },
+                    {
+                        "name": "MONGODB_USERNAME",
+                        "value": "cteadmin"
+                    }
+                ],
+                "mountPoints": [
+                    {
+                        "sourceVolume": "mongo-data",
+                        "containerPath": "/bitnami/mongodb",
+                        "readOnly": false
+                    }
+                ],
+                "volumesFrom": [],
+                "logConfiguration": {
+                    "logDriver": "awslogs",
+                    "options": {
+                        "awslogs-group": "/aws/ecs/Netskope-Cloud-Exchange-3-0",
+                        "awslogs-region": "us-east-2",
+                        "awslogs-stream-prefix": "Netskope"
+                    }
+                },
+                "healthCheck": {
+                    "command": [
+                        "CMD-SHELL",
+                        "if mongo --quiet cte --eval 'quit(db.runCommand({ ping: 1 }).ok ? 0 : 2)'; then exit 0; fi; exit 1;"
+                    ],
+                    "interval": 10,
+                    "timeout": 10,
+                    "retries": 10,
+                    "startPeriod": 60
+                }
+            },
+            {
+                "name": "core",
+                "image": "709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/core3:050922",
+                "cpu": 0,
+                "portMappings": [],
+                "essential": true,
+                "environment": [
+                    {
+                        "name": "MONGO_CONNECTION_STRING",
+                        "value": "mongodb://cteadmin:cteadmin@localhost:27017/cte"
+                    },
+                    {
+                        "name": "RABBITMQ_CONNECTION_STRING",
+                        "value": "amqp://user:bitnami@localhost"
+                    },
+                    {
+                        "name": "WATCHTOWER_HTTP_API_TOKEN",
+                        "value": "token"
+                    },
+                    {
+                        "name": "ENABLE_CELERY_BEAT",
+                        "value": "true"
+                    },
+                    {
+                        "name": "JWT_ALGORITHM",
+                        "value": "HS256"
+                    },
+                    {
+                        "name": "JWT_SECRET",
+                        "value": "verysercterdyuri18"
+                    },
+                    {
+                        "name": "INITIAL_WAIT",
+                        "value": "600"
+                    },
+                    {
+                        "name": "ANALYTICS_BASE_URL",
+                        "value": "https://reporting.netskope.tech"
+                    },
+                    {
+                        "name": "ANALYTICS_TOKEN",
+                        "value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpbnN0YWxsYXRpb25faWQiOiJjMDAyIn0.w8SVrTcDjk8PkR4IcbWGwOyf6-OWfCUyOoCTgZvqHqc"
+                    }
+                ],
+                "mountPoints": [
+                    {
+                        "sourceVolume": "custom_plugins",
+                        "containerPath": "/opt/netskope/plugins/custom_plugins",
+                        "readOnly": false
+                    }
+                ],
+                "volumesFrom": [],
+                "dependsOn": [
+                    {
+                        "containerName": "mongodb-primary",
+                        "condition": "HEALTHY"
+                    }
+                ],
+                "logConfiguration": {
+                    "logDriver": "awslogs",
+                    "options": {
+                        "awslogs-group": "/aws/ecs/Netskope-Cloud-Exchange-3-0",
+                        "awslogs-region": "us-east-2",
+                        "awslogs-stream-prefix": "Netskope"
+                    }
+                },
+                "healthCheck": {
+                    "command": [
+                        "CMD-SHELL",
+                        "nc -vz localhost 80 || exit 1"
+                    ],
+                    "interval": 10,
+                    "timeout": 10,
+                    "retries": 10,
+                    "startPeriod": 60
+                }
+            },
+            {
+                "name": "ui",
+                "image": "709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/ui3:050922",
+                "cpu": 0,
+                "portMappings": [
+                    {
+                        "containerPort": 3000,
+                        "hostPort": 3000,
+                        "protocol": "tcp"
+                    }
+                ],
+                "essential": true,
+                "environment": [
+                    {
+                        "name": "CE_API_URL",
+                        "value": "http://localhost"
+                    }
+                ],
+                "mountPoints": [
+                    {
+                        "sourceVolume": "ssl_certs",
+                        "containerPath": "/tmp/ssl_certs",
+                        "readOnly": false
+                    }
+                ],
+                "volumesFrom": [],
+                "dependsOn": [
+                    {
+                        "containerName": "core",
+                        "condition": "START"
+                    }
+                ],
+                "logConfiguration": {
+                    "logDriver": "awslogs",
+                    "options": {
+                        "awslogs-group": "/aws/ecs/Netskope-Cloud-Exchange-3-0",
+                        "awslogs-region": "us-east-2",
+                        "awslogs-stream-prefix": "Netskope"
+                    }
+                },
+                "healthCheck": {
+                    "command": [
+                        "CMD-SHELL",
+                        "curl -f http://localhost:3000 || exit 1"
+                    ],
+                    "interval": 10,
+                    "timeout": 10,
+                    "retries": 10,
+                    "startPeriod": 60
+                }
+            },
+            {
+                "name": "rabbitmq-stats",
+                "image": "709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/rabbitmq:050922",
+                "cpu": 0,
+                "portMappings": [
+                    {
+                        "containerPort": 15672,
+                        "hostPort": 15672,
+                        "protocol": "tcp"
+                    },
+                    {
+                        "containerPort": 5672,
+                        "hostPort": 5672,
+                        "protocol": "tcp"
+                    }
+                ],
+                "essential": true,
+                "environment": [
+                    {
+                        "name": "RABBITMQ_SECURE_PASSWORD",
+                        "value": "yes"
+                    },
+                    {
+                        "name": "RABBITMQ_NODE_NAME",
+                        "value": "rabbit@127.0.0.1"
+                    },
+                    {
+                        "name": "RABBITMQ_ERL_COOKIE",
+                        "value": "s3cr3tc00ki3"
+                    },
+                    {
+                        "name": "RABBITMQ_NODE_TYPE",
+                        "value": "stats"
+                    },
+                    {
+                        "name": "RABBITMQ_USE_LONGNAME",
+                        "value": "true"
+                    }
+                ],
+                "mountPoints": [
+                    {
+                        "sourceVolume": "rabbitmq",
+                        "containerPath": "/bitnami/rabbitmq/conf",
+                        "readOnly": false
+                    }
+                ],
+                "volumesFrom": [],
+                "logConfiguration": {
+                    "logDriver": "awslogs",
+                    "options": {
+                        "awslogs-group": "/aws/ecs/Netskope-Cloud-Exchange-3-0",
+                        "awslogs-region": "us-east-2",
+                        "awslogs-stream-prefix": "Netskope"
+                    }
+                },
+                "healthCheck": {
+                    "command": [
+                        "CMD-SHELL",
+                        "rabbitmq-diagnostics -q ping"
+                    ],
+                    "interval": 10,
+                    "timeout": 10,
+                    "retries": 10,
+                    "startPeriod": 60
+                }
+            }
         ],
-        "timeout": 10,
-        "interval": 10,
-        "startPeriod": 60
-      },
-      "name": "mongodb-primary"
-    },
-    {
-      
-      "logConfiguration": {
-        "logDriver": "awslogs",
-        
-        "options": {
-          "awslogs-group": "/aws/ecs/Netskope-Cloud-Exchange-3-0",
-          "awslogs-region": "/*AWS Region*/",
-          "awslogs-stream-prefix": "Netskope"
-        }
-      },
-      
-      "portMappings": [],
-      
-      "cpu": 0,
-      "environment": [
-        {
-          "name": "ANALYTICS_BASE_URL",
-          "value": "https://reporting.netskope.tech"
-        },
-        {
-          "name": "ANALYTICS_TOKEN",
-          "value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpbnN0YWxsYXRpb25faWQiOiJjMDAyIn0.w8SVrTcDjk8PkR4IcbWGwOyf6-OWfCUyOoCTgZvqHqc"
-        },
-        {
-          "name": "JWT_ALGORITHM",
-          "value": "H256"
-        },
-        {
-          "name": "JWT_SECRET",
-          "value": "verysercterdyuri18"
-        },
-        {
-          "name": "MONGO_CONNECTION_STRING",
-          "value": "mongodb://cteadmin:cteadmin@localhost:27017/cte"
-        },
-        {
-          "name": "RABBITMQ_CONNECTION_STRING",
-          "value": "amqp://user:bitnami@localhost"
-        },
-        {
-          "name": "WATCHTOWER_HTTP_API_TOKEN",
-          "value": "token"
-        },
-        {
-          "name": "INITIAL_WAIT",
-          "value": "600"
-        }
-      ],
-      "mountPoints": [
-        {
-          "readOnly": false,
-          "containerPath": "/opt/netskope/plugins/custom_plugins",
-          "sourceVolume": "custom_plugins"
-        }
-      ],
-      "volumesFrom": [],
-      "image": "netskopetechnicalalliances/cloudexchange:core3-latest",
-      "dependsOn": [
-        {
-          "containerName": "mongodb-primary",
-          "condition": "HEALTHY"
-        }
-      ],
-      "name": "core"
-    },
-    {
-      "logConfiguration": {
-        "logDriver": "awslogs",
-        "options": {
-          "awslogs-group": "/aws/ecs/Netskope-Cloud-Exchange-3-0",
-          "awslogs-region": "/*AWS Region*/",
-          "awslogs-stream-prefix": "Netskope"
-        }
-      },
-      
-      "portMappings": [
-        {
-          "hostPort": 3000,
-          "protocol": "tcp",
-          "containerPort": 3000
-        }
-      ],
-      
-      
-      "cpu": 0,
-      "environment": [
-        {
-          "name": "CE_API_URL",
-          "value": "http://localhost"
-        }
-      ],
-      "mountPoints": [
-        {
-          "readOnly": false,
-          "containerPath": "/tmp/ssl_certs",
-          "sourceVolume": "ssl_certs"
-        }
-      ],
-      "volumesFrom": [],
-      "image": "netskopetechnicalalliances/cloudexchange:ui3-latest",
-      "dependsOn": [
-        {
-          "containerName": "core",
-          "condition": "START"
-        }
-      ],
-        "healthCheck": {
-          "retries": 3,
-          "command": [
-            "CMD-SHELL",
-            "curl -f http://localhost:3000 || exit 1"
-          ],
-          "timeout": 5,
-          "interval": 30,
-          "startPeriod": null
-        },
-       "name": "ui"
-    },
-    {
-      "logConfiguration": {
-        "logDriver": "awslogs",
-        
-        "options": {
-          "awslogs-group": "/aws/ecs/Netskope-Cloud-Exchange-3-0",
-          "awslogs-region": "/*AWS Region*/",
-          "awslogs-stream-prefix": "Netskope"
-        }
-      },
-      "portMappings": [
-        {
-          "hostPort": 15672,
-          "protocol": "tcp",
-          "containerPort": 15672
-        },
-        {
-          "hostPort": 5672,
-          "protocol": "tcp",
-          "containerPort": 5672
-        }
-      ],
-      "cpu": 0,
-      "environment": [
-        {
-          "name": "RABBITMQ_ERL_COOKIE",
-          "value": "s3cr3tc00ki3"
-        },
-        {
-          "name": "RABBITMQ_NODE_NAME",
-          "value": "rabbit@127.0.0.1"
-        },
-        {
-          "name": "RABBITMQ_NODE_TYPE",
-          "value": "stats"
-        },
-        {
-          "name": "RABBITMQ_SECURE_PASSWORD",
-          "value": "yes"
-        },
-        {
-          "name": "RABBITMQ_USE_LONGNAME",
-          "value": "true"
-        }
-      ],
-      "mountPoints": [
-        {
-          "readOnly": false,
-          "containerPath": "/bitnami/rabbitmq/conf",
-          "sourceVolume": "rabbitmq"
-        }
-      ],
-      "volumesFrom": [],
-      "image": "bitnami/rabbitmq:3.8",
-      "name": "rabbitmq-stats",
-      "healthCheck": {
-        "retries": 10,
-        "command": [
-          "CMD-SHELL",
-          "curl -f  http://localhost:5672 || exit 1"
+        "taskRoleArn": "arn:aws:iam::/*AWS Account ID*/:role/NetskopeCloudExchangeTaskRole",
+        "executionRoleArn": "arn:aws:iam::/*AWS Account ID*/:role/NetskopeCloudExchangeTaskExecutionRole",
+        "networkMode": "awsvpc",
+        "volumes": [
+            {
+                "name": "mongo-data",
+                "efsVolumeConfiguration": {
+                    "fileSystemId": "/*NetskopeCloudExchangeEFS*/",
+                    "rootDirectory": "/",
+                    "transitEncryption": "ENABLED",
+                    "authorizationConfig": {
+                        "accessPointId": "/*MongoDBAccessPoint*/",
+                        "iam": "ENABLED"
+                    }
+                }
+            },
+            {
+                "name": "ssl_certs",
+                "efsVolumeConfiguration": {
+                    "fileSystemId": "/*NetskopeCloudExchangeEFS*/",
+                    "rootDirectory": "/",
+                    "transitEncryption": "ENABLED",
+                    "authorizationConfig": {
+                        "accessPointId": "/*SSLCertAccessPoint*/",
+                        "iam": "ENABLED"
+                    }
+                }
+            },
+            {
+                "name": "custom_plugins",
+                "efsVolumeConfiguration": {
+                    "fileSystemId": "/*NetskopeCloudExchangeEFS*/",
+                    "rootDirectory": "/",
+                    "transitEncryption": "ENABLED",
+                    "authorizationConfig": {
+                        "accessPointId": "/*CustomPluginsAccessPoint*/",
+                        "iam": "ENABLED"
+                    }
+                }
+            },
+            {
+                "name": "rabbitmq",
+                "efsVolumeConfiguration": {
+                    "fileSystemId": "/*NetskopeCloudExchangeEFS*/",
+                    "rootDirectory": "/",
+                    "transitEncryption": "ENABLED",
+                    "authorizationConfig": {
+                        "accessPointId": "/*RabbitMQAccessPoint*/",
+                        "iam": "ENABLED"
+                    }
+                }
+            }
         ],
-        "timeout": 30,
-        "interval": 30,
-        "startPeriod": 20
-      }
-    }
-  ],
-  "placementConstraints": [],
-  "memory": "8192",
-  "taskRoleArn": "arn:aws:iam::/*AWS Account ID*/:role/NetskopeCloudExchangeTaskRole",
-  "requiresCompatibilities": [
-    "FARGATE"
-  ],
-  "networkMode": "awsvpc",
-  "cpu": "4096",
-  "volumes": [
-    {
-      "efsVolumeConfiguration": {
-        "fileSystemId": "/*EFS FS Id*/",
-        "authorizationConfig": {
-          "iam": "ENABLED"
-        },
-        "transitEncryption": "ENABLED",
-        "rootDirectory": "/data/mongo-data"
-      },
-      "name": "mongo-data"
-    },
-    {
-      
-      "efsVolumeConfiguration": {
-        "fileSystemId": "/*EFS FS Id*/",
-        "authorizationConfig": {
-          "iam": "ENABLED"
-        },
-        "transitEncryption": "ENABLED",
-        "rootDirectory": "/data/ssl_certs"
-      },
-      "name": "ssl_certs"
-    },
-    {
-      "efsVolumeConfiguration": {
-        "fileSystemId": "/*EFS FS Id*/",
-        "authorizationConfig": {
-          "iam": "ENABLED"
-        },
-        "transitEncryption": "ENABLED",
-        "rootDirectory": "/data/custom_plugins"
-      },
-      "name": "custom_plugins"
-    },
-    {
-      
-      "efsVolumeConfiguration": {
-        "fileSystemId": "/*EFS FS Id*/",
-        "authorizationConfig": {
-          "iam": "ENABLED"
-        },
-        "transitEncryption": "ENABLED",
-        "rootDirectory": "/data/rabbitmq"
-      },
-      "name": "rabbitmq"
-    }
-  ]
+        "placementConstraints": [],
+        "requiresCompatibilities": [
+            "FARGATE"
+        ],
+        "cpu": "4096",
+        "memory": "8192"
+    
 }

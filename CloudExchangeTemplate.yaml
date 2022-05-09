@@ -71,7 +71,11 @@ Resources:
               - Effect: Allow
                 Action:
                   - "elasticfilesystem:ClientMount"
-                  - "elasticfilesystem:ClientWrite"
+                  - "elasticfilesystem:ClientWrite",
+                  - "ecr:GetAuthorizationToken",
+                  - "ecr:BatchCheckLayerAvailability",
+                  - "ecr:GetDownloadUrlForLayer",
+                  - "ecr:BatchGetImage"
                 Resource: '*'
   
   TaskSecurityGroup:
