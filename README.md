@@ -1,4 +1,4 @@
-
+﻿
 
 # Deploying Netskope Cloud Exchange using AWS ECS Fargate
 
@@ -48,7 +48,7 @@ The following prerequisites are required to implement the Netskope Cloud Exchang
 
 ## Deployment and Configuration Steps
 ### Deploying Amazon EFS Filesystem, AWS Custom resource Lambda function, IAM roles and Netskope CE Task Security group using CloudExchangeTemplate.yaml and creating Netskope Cloud Exchange Task Definition.
-Download the CloudExchangeTemplate.yaml and CloudExchangeTaskDefinition.json to your computer.
+Download the [CloudExchangeTemplate.yaml](https://github.com/netskopeoss/Netskope-CloudExchange-Amazon-ECS-Fargate/blob/main/CloudExchangeTemplate.yaml) and [CloudExchangeTaskDefinition.json](https://github.com/netskopeoss/Netskope-CloudExchange-Amazon-ECS-Fargate/blob/main/CloudExchangeTaskDefinition.json) to your computer.
 
 **Step 1.1:** **Deploy the CloudFormation Stack on the AWS Security Management account**
 
@@ -73,7 +73,7 @@ Sign into the AWS Security Management account as administrator and deploy the Ne
 ![](.//media/NetskopeCE.09fc7e95-8fc0-4a42-9c93-89f7a36aafbe.004.png)
 
 
-1.1.5. Click **Next**.
+1.1.5. Click **Next**. <br />
 1.1.6. Optionally, enter the Tags for your CloudFormation stack and / or click Next.
 
 ![](.//media/NetskopeCE.09fc7e95-8fc0-4a42-9c93-89f7a36aafbe.005.png)
@@ -184,7 +184,12 @@ Wait till the task status will be RUNNING with all four containers HEALTHY.
 
 Now you can use the task Private IP address to sign into the Netskope Cloud Exchange. 
 
-After initial installation Netskope Cloud Exchange is available via HTTP and you can access it via http://*<Task IP address>.* To secure access to the Netskope Cloud Exchange follow the documentation mentioned in the step 1.2.6 above.
+After initial installation Netskope Cloud Exchange is available via HTTP port 3000 on the Task Private IP address highlighted above. You can access it via http://[Task Private IP address]:3000 <br />
+
+We do not recommend assigning public IP address to Netskope Cloud Exchange. Always connect to the Netskope Cloud Exchange via the task Private IP addess. 
+To enable Netskope Cloud Exchange communicating with external third-party services we recommend deploying [Amazon Nat Gateway](https://docs.aws.amazon.com/vpc/latest/userguide/vpc-nat-gateway.html) in your VPC. 
+
+As mentioned in the step 1.1.8 above, add the Netskope IP addresses from the [IP Allowlisting](https://docs.netskope.com/en/ip-allowlisting.html) article on the Netskope Knowledge Portal to the Netskope Cloud Exchange Security Group egress rules, to allow Netskope Cloud Exchange HTTPS access to the Netskope Security Cloud.
 
 For complete documentation on how to use Netskope Cloud Exchange please refer to the [Netskope Cloud Exchange documentation](https://docs.netskope.com/en/netskope-cloud-exchange.html). 
 
