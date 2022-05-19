@@ -104,6 +104,16 @@ Sign into the AWS Security Management account as administrator and deploy the Ne
 |\<SSLCertAccessPoint\>|SSL Certificates EFS Access Point|
 |\<CustomPluginsAccessPoint\>|CustomPlugins EFS Access Point|
 
+Optional: to further secure your Netskope Cloud Exchange deployment, replace the following parameters in the CloudExchangeTaskDefinition.json file : <br />
+
+|Parameters|Default Values|
+| :- | :- |
+|MONGODB_ROOT_PASSWORD|DBPassw0rd123|
+|MONGODB_PASSWORD|cteadmin|
+
+To change these values from the default ones, search for all of the occurrences of the above Default Values in the file and replace them with the new values.<br />
+
+
 
 
 1.2.2. Using AWS CLI, create a new Amazon ECS Task Definition for Netskope Cloud Exchange:
