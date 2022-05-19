@@ -261,18 +261,18 @@
                 }
             }
         ],
-        "taskRoleArn": "arn:aws:iam::/*AWS Account ID*/:role/NetskopeCloudExchangeTaskRole",
-        "executionRoleArn": "arn:aws:iam::/*AWS Account ID*/:role/NetskopeCloudExchangeTaskExecutionRole",
+        "taskRoleArn": "arn:aws:iam::<AWS Account ID>:role/NetskopeCloudExchangeTaskRole",
+        "executionRoleArn": "arn:aws:iam::<AWS Account ID>:role/NetskopeCloudExchangeTaskExecutionRole",
         "networkMode": "awsvpc",
         "volumes": [
             {
                 "name": "mongo-data",
                 "efsVolumeConfiguration": {
-                    "fileSystemId": "/*NetskopeCloudExchangeEFS*/",
+                    "fileSystemId": "<NetskopeCloudExchangeEFS>",
                     "rootDirectory": "/",
                     "transitEncryption": "ENABLED",
                     "authorizationConfig": {
-                        "accessPointId": "/*MongoDBAccessPoint*/",
+                        "accessPointId": "<MongoDBAccessPoint>",
                         "iam": "ENABLED"
                     }
                 }
@@ -280,11 +280,11 @@
             {
                 "name": "ssl_certs",
                 "efsVolumeConfiguration": {
-                    "fileSystemId": "/*NetskopeCloudExchangeEFS*/",
+                    "fileSystemId": "<NetskopeCloudExchangeEFS>",
                     "rootDirectory": "/",
                     "transitEncryption": "ENABLED",
                     "authorizationConfig": {
-                        "accessPointId": "/*SSLCertAccessPoint*/",
+                        "accessPointId": "<SSLCertAccessPoint>",
                         "iam": "ENABLED"
                     }
                 }
@@ -292,11 +292,11 @@
             {
                 "name": "custom_plugins",
                 "efsVolumeConfiguration": {
-                    "fileSystemId": "/*NetskopeCloudExchangeEFS*/",
+                    "fileSystemId": "<NetskopeCloudExchangeEFS>",
                     "rootDirectory": "/",
                     "transitEncryption": "ENABLED",
                     "authorizationConfig": {
-                        "accessPointId": "/*CustomPluginsAccessPoint*/",
+                        "accessPointId": "<CustomPluginsAccessPoint>",
                         "iam": "ENABLED"
                     }
                 }
@@ -304,11 +304,11 @@
             {
                 "name": "rabbitmq",
                 "efsVolumeConfiguration": {
-                    "fileSystemId": "/*NetskopeCloudExchangeEFS*/",
+                    "fileSystemId": "<NetskopeCloudExchangeEFS>",
                     "rootDirectory": "/",
                     "transitEncryption": "ENABLED",
                     "authorizationConfig": {
-                        "accessPointId": "/*RabbitMQAccessPoint*/",
+                        "accessPointId": "<RabbitMQAccessPoint>",
                         "iam": "ENABLED"
                     }
                 }
