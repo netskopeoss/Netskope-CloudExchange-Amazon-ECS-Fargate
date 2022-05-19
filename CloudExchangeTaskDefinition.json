@@ -24,7 +24,7 @@
                     },
                     {
                         "name": "MONGODB_ROOT_PASSWORD",
-                        "value": "password123"
+                        "value": "DBPassw0rd123"
                     },
                     {
                         "name": "MONGODB_ADVERTISED_HOSTNAME",
