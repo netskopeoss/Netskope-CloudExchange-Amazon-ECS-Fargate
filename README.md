@@ -65,6 +65,8 @@ Sign into the AWS Security Management account as administrator and deploy the Ne
 
 1.1.4. Enter the stack name and the parameters for your deployment:
 
+|Parameters||
+| :- | :- |
 |Existing VPC Id|Enter the existing VPC Id where Netskope Cloud Exchange will be deployed|
 |Existing Private Subnet ID 1|Enter the first Subnet ID where the EFS filesystem for Netskope Cloud Exchange will be deployed. Note that custom resource Lambda function in this stack should be able to communicate from this subnet to Amazon S3 regional endpoint|
 |Existing Private Subnet ID 2 |Enter the second Subnet ID where the EFS filesystem for Netskope Cloud Exchange will be deployed. Note that custom resource Lambda function in this stack should be able to communicate from this subnet to Amazon S3 regional endpoint|
@@ -93,12 +95,14 @@ Sign into the AWS Security Management account as administrator and deploy the Ne
 
 1.2.1. Open the CloudExchangeTaskDefinition.json file for editing and replace all occurrences of the following values as following:
 
-|<p>\<AWS Account ID\></p><p></p>|AWS Account ID where Netskope Cloud Exchange been deployed|
-|/\*NetskopeCloudExchangeEFS\*/|AWS EFS File System Id created in by the CloudFormation template above and recorder in the step 1.1.9 above.|
-|/\*MongoDBAccessPoint\*/|Mongo DB EFS Access Point|
-|/\*RabbitMQAccessPoint\*/|RabbitMQ EFS Access Point|
-|/\*SSLCertAccessPoint\*/|SSL Certificates EFS Access Point|
-|/\*CustomPluginsAccessPoint\*/|CustomPlugins EFS Access Point|
+|Parameters||
+| :- | :- |
+|\<AWS Account ID\>|AWS Account ID where Netskope Cloud Exchange been deployed|
+|\<NetskopeCloudExchangeEFS\>|AWS EFS File System Id created in by the CloudFormation template above and recorder in the step 1.1.9 above.|
+|\<MongoDBAccessPoint\>|Mongo DB EFS Access Point|
+|\<RabbitMQAccessPoint\>|RabbitMQ EFS Access Point|
+|\<SSLCertAccessPoint\>|SSL Certificates EFS Access Point|
+|\<CustomPluginsAccessPoint\>|CustomPlugins EFS Access Point|
 
 
 
