@@ -104,7 +104,7 @@ Sign into the AWS Security Management account as administrator and deploy the Ne
 |\<SSLCertAccessPoint\>|SSL Certificates EFS Access Point|
 |\<CustomPluginsAccessPoint\>|CustomPlugins EFS Access Point|
 
-Optional: to further secure your Netskope Cloud Exchange deployment, replace the following parameters in the CloudExchangeTaskDefinition.json file : <br />
+Optional: to further secure your Netskope Cloud Exchange production delpoyment, replace the following parameters in the CloudExchangeTaskDefinition.json file : <br />
 
 |Parameters|Default Values|
 | :- | :- |
