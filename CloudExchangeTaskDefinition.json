@@ -16,7 +16,7 @@
                 "environment": [
                     {
                         "name": "MONGODB_SYSTEM_LOG_VERBOSITY",
-                        "value": "5"
+                        "value": "0"
                     },
                     {
                         "name": "MONGODB_DATABASE",
