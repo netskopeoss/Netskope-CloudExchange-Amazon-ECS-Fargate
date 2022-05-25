@@ -2,7 +2,7 @@
          "containerDefinitions": [
             {
                 "name": "mongodb-primary",
-                "image": "709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/mongodb:050922",
+                "image": "709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/mongodb:05252022",
                 "cpu": 0,
                 "portMappings": [
                     {
@@ -68,7 +68,7 @@
             },
             {
                 "name": "core",
-                "image": "709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/core3:050922",
+                "image": "709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/core3:05252022",
                 "cpu": 0,
                 "portMappings": [],
                 "essential": true,
@@ -145,7 +145,7 @@
             },
             {
                 "name": "ui",
-                "image": "709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/ui3:050922",
+                "image": "709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/ui3:05252022",
                 "cpu": 0,
                 "portMappings": [
                     {
@@ -196,7 +196,7 @@
             },
             {
                 "name": "rabbitmq-stats",
-                "image": "709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/rabbitmq:050922",
+                "image": "709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/rabbitmq:05252022",
                 "cpu": 0,
                 "portMappings": [
                     {
@@ -261,8 +261,8 @@
                 }
             }
         ],
-        "taskRoleArn": "arn:aws:iam::<AWS Account ID>:role/NetskopeCloudExchangeTaskRole",
-        "executionRoleArn": "arn:aws:iam::<AWS Account ID>:role/NetskopeCloudExchangeTaskExecutionRole",
+        "taskRoleArn": "<NetskopeCloudExchangeTaskRole>",
+        "executionRoleArn": "<NetskopeCloudExchangeTaskExecutionRole>",
         "networkMode": "awsvpc",
         "volumes": [
             {
