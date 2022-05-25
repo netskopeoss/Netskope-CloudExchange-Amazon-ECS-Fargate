@@ -89,7 +89,7 @@ Sign into the AWS Security Management account as administrator and deploy the Ne
 
 ![](.//media/NetskopeCE.09fc7e95-8fc0-4a42-9c93-89f7a36aafbe.007.png)
 
-1.1.9. Note the EFS File System Id (NetskopeCloudExchangeEFS) and the  in the Access Points (MongoDBAccessPoint, RabbitMQAccessPoint, SSLCertAccessPoint, CustomPluginsAccessPoint) from the CloudFormation stack output. It’ll be used late on while creating the Netskope Cloud Exchange Task Definition for Amazon ECS.
+1.1.9. Note the EFS File System Id (NetskopeCloudExchangeEFS), the  in the Access Points (MongoDBAccessPoint, RabbitMQAccessPoint, SSLCertAccessPoint, CustomPluginsAccessPoint), the NetskopeCloudExchangeTaskExecutionRole and the NetskopeCloudExchangeTaskRole from the CloudFormation stack output. It’ll be used late on while creating the Netskope Cloud Exchange Task Definition for Amazon ECS.
 
 **Step 1.2: Create Netskope Cloud Exchange Task Definition:**
 
@@ -98,6 +98,8 @@ Sign into the AWS Security Management account as administrator and deploy the Ne
 |Parameters||
 | :- | :- |
 |\<AWS Account ID\>|AWS Account ID where Netskope Cloud Exchange been deployed|
+|\<NetskopeCloudExchangeTaskExecutionRole\>|Netskope Cloud Exchange task execution role|
+|\<NetskopeCloudExchangeTaskRole\>|Netskope Cloud Exchange task role|
 |\<NetskopeCloudExchangeEFS\>|AWS EFS File System Id created in by the CloudFormation template above and recorder in the step 1.1.9 above.|
 |\<MongoDBAccessPoint\>|Mongo DB EFS Access Point|
 |\<RabbitMQAccessPoint\>|RabbitMQ EFS Access Point|
