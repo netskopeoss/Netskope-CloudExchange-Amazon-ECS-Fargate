@@ -200,6 +200,12 @@ Resources:
           OwnerGid: "1001"
           OwnerUid: "1001"
           Permissions: "0777"
+  NetskopeTaskLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties: 
+      LogGroupName: "/aws/ecs/Netskope-Cloud-Exchange-3-0"
+      RetentionInDays: 3653
+
   
 Outputs:
   NetskopeCloudExchangeEFS:

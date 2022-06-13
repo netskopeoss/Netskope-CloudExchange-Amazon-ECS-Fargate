@@ -96,6 +96,7 @@ Sign into the AWS Security Management account as administrator and deploy the Ne
 |Parameters||
 | :- | :- |
 |\<AWS Account ID\>|AWS Account ID where Netskope Cloud Exchange been deployed|
+|\<AWS-Region\>|AWS Region where Netskope Cloud Exchange been deployed|
 |\<NetskopeCloudExchangeTaskExecutionRole\>|Netskope Cloud Exchange task execution role|
 |\<NetskopeCloudExchangeTaskRole\>|Netskope Cloud Exchange task role|
 |\<NetskopeCloudExchangeEFS\>|AWS EFS File System Id created in by the CloudFormation template above and recorder in the step 1.1.9 above.|

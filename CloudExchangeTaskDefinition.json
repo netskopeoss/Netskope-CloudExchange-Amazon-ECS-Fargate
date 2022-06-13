@@ -51,7 +51,7 @@
                     "logDriver": "awslogs",
                     "options": {
                         "awslogs-group": "/aws/ecs/Netskope-Cloud-Exchange-3-0",
-                        "awslogs-region": "us-east-2",
+                        "awslogs-region": "<AWS-Region>",
                         "awslogs-stream-prefix": "Netskope"
                     }
                 },
@@ -128,7 +128,7 @@
                     "logDriver": "awslogs",
                     "options": {
                         "awslogs-group": "/aws/ecs/Netskope-Cloud-Exchange-3-0",
-                        "awslogs-region": "us-east-2",
+                        "awslogs-region": "<AWS-Region>",
                         "awslogs-stream-prefix": "Netskope"
                     }
                 },
@@ -179,7 +179,7 @@
                     "logDriver": "awslogs",
                     "options": {
                         "awslogs-group": "/aws/ecs/Netskope-Cloud-Exchange-3-0",
-                        "awslogs-region": "us-east-2",
+                        "awslogs-region": "<AWS-Region>",
                         "awslogs-stream-prefix": "Netskope"
                     }
                 },
@@ -245,7 +245,7 @@
                     "logDriver": "awslogs",
                     "options": {
                         "awslogs-group": "/aws/ecs/Netskope-Cloud-Exchange-3-0",
-                        "awslogs-region": "us-east-2",
+                        "awslogs-region": "<AWS-Region>",
                         "awslogs-stream-prefix": "Netskope"
                     }
                 },
