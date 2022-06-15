@@ -68,7 +68,7 @@
             },
             {
                 "name": "core",
-                "image": "709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/core3:06022022",
+                "image": "709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/core3:3.3.1",
                 "cpu": 0,
                 "portMappings": [],
                 "essential": true,
