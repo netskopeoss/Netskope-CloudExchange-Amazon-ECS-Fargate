@@ -84,7 +84,7 @@ Sign into the AWS Security Management account as administrator and deploy the Ne
 1.1.8. When CloudFormation stack is in the CREATE\_COMPLETE state, navigate to the Output tab and see the Security Group Id. <br />
 You will use this Security Group while provisioning the the Fargate Service in the Step 2.1.4 below. <br />
 
-#### Note: If you choose a different Security Group while creating the Fargate Service, or choose to create a new Security Group automatically, your service will not be able to mount fo the EFS file system and will fail. 
+#### Note: If you choose a different Security Group while creating the Fargate Service, or choose to create a new Security Group automatically, your service will not be able to mount the EFS file system and will fail. 
 
 need to customize to allow Netskope Cloud Exchange access to the Netskope NewEdge and third-party platforms.
 #### Please follow the instructions in the [IP Allowlisting](https://docs.netskope.com/en/ip-allowlisting.html) article on the Netskope Knowledge Portal to add the Netskope NewEdge IP addresses to the Netskope CE Task Security Group.
@@ -169,7 +169,7 @@ Leave other parameters unchanged and click Next step
 
 Choose the security group you noted in the step 1.1.8 above and click Next step.
 
-#### Note: If you choose a different Security Group while creating the Fargate Service, or choose to create a new Security Group automatically, your service will not be able to mount fo the EFS file system and will fail. 
+#### Note: If you choose a different Security Group while creating the Fargate Service, or choose to create a new Security Group automatically, your service will not be able to mount the EFS file system and will fail. 
 
 For the best security practices, we do not recommend assigning public IP address to the Netskope Cloud Exchange service, but rather accessing it using private IP address either via a jump host, Amazon Direct Connect or [Netskope Private Access](https://www.netskope.com/products/private-access) (NPA).
 
