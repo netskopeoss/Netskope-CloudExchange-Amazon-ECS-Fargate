@@ -198,6 +198,7 @@
                 "name": "rabbitmq-stats",
                 "image": "709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/rabbitmq:05252022",
                 "cpu": 0,
+                "memory": 1907,
                 "portMappings": [
                     {
                         "containerPort": 15672,
