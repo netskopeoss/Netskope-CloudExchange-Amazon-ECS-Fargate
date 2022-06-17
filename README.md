@@ -100,7 +100,6 @@ need to customize to allow Netskope Cloud Exchange access to the Netskope NewEdg
 
 |Parameters||
 | :- | :- |
-|\<AWS Account ID\>|AWS Account ID where Netskope Cloud Exchange been deployed|
 |\<AWS-Region\>|AWS Region where Netskope Cloud Exchange been deployed|
 |\<NetskopeCloudExchangeTaskExecutionRole\>|Netskope Cloud Exchange task execution role|
 |\<NetskopeCloudExchangeTaskRole\>|Netskope Cloud Exchange task role|
