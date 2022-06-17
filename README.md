@@ -57,7 +57,7 @@ Sign into the AWS Security Management account as administrator and deploy the Ne
 
 ![](.//media/NetskopeCE.09fc7e95-8fc0-4a42-9c93-89f7a36aafbe.002.png)
 
-1.1.3. Choose **Upload a template file** then click on Choose file. Choose the CloudExchangeTemplate.yaml from the directory on your disk where you downloaded it to, click **Open** and then click **Next**.<br />
+1.1.3. Choose **Upload a template file** then click on Choose file. Choose the [CloudExchangeTemplate.yaml](https://github.com/netskopeoss/Netskope-CloudExchange-Amazon-ECS-Fargate/blob/main/CloudExchangeTemplate.yaml)  from the directory on your disk where you downloaded it to, click **Open** and then click **Next**.<br />
 
 ![](.//media/NetskopeCE.09fc7e95-8fc0-4a42-9c93-89f7a36aafbe.003.png)
 
