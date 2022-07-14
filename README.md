@@ -111,12 +111,50 @@ You may customize to allow Netskope Cloud Exchange access to the Netskope NewEdg
 
 Optional: to further secure your Netskope Cloud Exchange production delpoyment, replace the following parameters in the CloudExchangeTaskDefinition.json file : <br />
 
-|Parameters|Default Values|
+|Parameters|Default Values|Number of occurrences|
 | :- | :- |
-|MONGODB_ROOT_PASSWORD|DBPassw0rd123|
-|MONGODB_PASSWORD|cteadmin|
+|MONGODB_ROOT_PASSWORD|DBPassw0rd123|1|
+|MONGODB_PASSWORD|cteadmin|2|
 
-To change these values from the default ones, search for all of the occurrences of the above Default Values in the file and replace them with the new values.<br />
+To change these values from the default ones, search for ALL of the occurrences of the above Default Values in the file and replace them with the new values.<br />
+For your reference, below are all of the occurrences of the above values in the task definition file:
+
+```
+  "environment": [
+                    {
+                        "name": "MONGODB_SYSTEM_LOG_VERBOSITY",
+                        "value": "0"
+                    },
+                    {
+                        "name": "MONGODB_DATABASE",
+                        "value": "cte"
+                    },
+                    {
+                        "name": "MONGODB_ROOT_PASSWORD",
+                        "value": "DBPassw0rd123"      <-----change here
+                    },
+                    {
+                        "name": "MONGODB_ADVERTISED_HOSTNAME",
+                        "value": "localhost"
+                    },
+                    {
+                        "name": "MONGODB_PASSWORD",
+                        "value": "cteadmin"          <-----change here
+                    },
+                    {
+                        "name": "MONGODB_USERNAME",
+                        "value": "cteadmin"
+                    }
+                ],
+``` 
+
+```
+"environment": [
+                    {
+                        "name": "MONGO_CONNECTION_STRING",
+                        "value": "mongodb://cteadmin:cteadmin@localhost:27017/cte"    <-----change the second occurence here
+                    },
+```
 
 
 
