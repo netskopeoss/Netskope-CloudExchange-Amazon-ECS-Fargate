@@ -112,7 +112,7 @@ You may customize to allow Netskope Cloud Exchange access to the Netskope NewEdg
 Optional: to further secure your Netskope Cloud Exchange production delpoyment, replace the following parameters in the CloudExchangeTaskDefinition.json file : <br />
 
 |Parameters|Default Values|Number of occurrences|
-| :- | :- |
+| :- | :- | :- |
 |MONGODB_ROOT_PASSWORD|DBPassw0rd123|1|
 |MONGODB_PASSWORD|cteadmin|2|
 
