@@ -86,7 +86,7 @@ You will use this Security Group while provisioning the the Fargate Service in t
 
 #### Note: If you choose a different Security Group while creating the Fargate Service, or choose to create a new Security Group automatically, your service will not be able to mount the EFS file system and will fail. 
 
-need to customize to allow Netskope Cloud Exchange access to the Netskope NewEdge and third-party platforms.
+You may customize to allow Netskope Cloud Exchange access to the Netskope NewEdge and third-party platforms.
 #### Please follow the instructions in the [IP Allowlisting](https://docs.netskope.com/en/ip-allowlisting.html) article on the Netskope Knowledge Portal to add the Netskope NewEdge IP addresses to the Netskope CE Task Security Group.
 
 
