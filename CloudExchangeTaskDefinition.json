@@ -68,7 +68,7 @@
             },
             {
                 "name": "core",
-                "image": "709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/core3:3.3.1",
+                "image": "709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/core3:7292022",
                 "cpu": 0,
                 "portMappings": [],
                 "essential": true,
@@ -145,7 +145,7 @@
             },
             {
                 "name": "ui",
-                "image": "709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/ui3:06022022",
+                "image": "709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/ui3:7292022",
                 "cpu": 0,
                 "portMappings": [
                     {
