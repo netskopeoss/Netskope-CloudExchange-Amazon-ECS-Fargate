@@ -1,47 +1,29 @@
-﻿
-
 # Deploying Netskope Cloud Exchange using AWS ECS Fargate
-
+<div style="text-align: justify">
 The Netskope Cloud Exchange (CE) provides customers with powerful integration tools to leverage investments across their security posture.
 
-Cloud Exchange consumes valuable Netskope telemetry and external threat intelligence and risk scores, enabling improved policy implementation, automated service ticket creation, and exportation of log events from the Netskope Security Cloud.
+Cloud Exchange consumes valuable Netskope telemetry and external threat intelligence and risk scores, enabling improved policy implementation, automated service ticket creation, and exportation of log events from the Netskope Security Cloud. 
 
 To learn more about Netskope Cloud Exchange please refer to the [Netskope Cloud Exchange introduction page](https://www.netskope.com/products/capabilities/cloud-exchange).
 
-Amazon Elastic Container Service (Amazon ECS) is a fully managed container orchestration service that makes it easy for you to deploy, manage, and scale containerized applications.
+Amazon Elastic Container Service (Amazon ECS) is a fully managed container orchestration service that makes it easy for you to deploy, manage and scale containerized applications.
 
-AWS Fargate is a serverless, pay-as-you-go compute engine that lets you focus on building applications without managing servers. AWS Fargate is compatible with Amazon Elastic Container Service (ECS). To learn more about Amazon ECS please follow the [Amazon ECS](https://aws.amazon.com/ecs/) documentation. To learn more about AWS Fargate please follow the [AWS Fargate](https://aws.amazon.com/fargate/) documentation page.
+AWS Fargate is a serverless, pay-as-you-go compute engine that lets you focus on building applications without managing servers. AWS Fargate is compatible with Amazon Elastic Container Service (ECS). To learn more about Amazon ECS please follow the [Amazon ECS](https://aws.amazon.com/ecs/) documentation page. To learn more about AWS Fargate please follow the [AWS Fargate](https://aws.amazon.com/fargate/) documentation page.
 
-This document will guide you how to deploy Netskope Cloud Exchange using AWS Fargate on Amazon ECS.
+AWS CloudFormation is a service that helps you model and set up your AWS resources so that you can spend less time managing those resources and more time focusing on your applications that run in AWS. To learn more about AWS CloudFormation please follow the [AWS CloudFormation](https://aws.amazon.com/cloudformation/) documentation page.
+
+This document will guide you on how to deploy Netskope Cloud Exchange on AWS Fargate using AWS CloudFormation. </div>
 
 This solution consists of the following components:
 
-CloudExchangeTemplate.yaml AWS CloudFormation template that deploys the following resources:
+**NetskopeCECloudFormation.yaml** - AWS CloudFormation template that deploys the following resources:
 
+- Networking Resources - VPC, Private Subnets (ECS Cluster, ALB), Public Subnets (for NAT Gateway), Internet Gateway, Security Groups 
 - Amazon EFS filesystem for Netskope Cloud Exchange
 - NetskopeCloudExchangeTaskRole and NetskopeCloudExchangeTaskExecutionRole AWS IAM roles 
-- NetskopeCETaskSecurityGroup will be used by the Netskope CE task
-
-CloudExchangeTaskDefinition.json Task Definition json file used to create a new task definition for the Netskope Cloud Exchange
-
-## Architecture diagram
-
-![](.//media/NetskopeCE.09fc7e95-8fc0-4a42-9c93-89f7a36aafbe.001.png)
-
-*Fig 1. Netskope Cloud Exchange on AWS Fargate for Amazon ECS*
-
-## Prerequisites 
-
-The following prerequisites are required to implement the Netskope Cloud Exchange on AWS Fargate for Amazon ECS:
-
-- Existing Amazon VPC with minimum of two subnets in different Availability Zones and outbound connectivity to the Netskope NewEdge platform and third party applications and partners’ platforms you’re planning to integrate Netskope Cloud Exchange with. To enable Netskope Cloud Exchange communicating with external third-party services we recommend deploying [Amazon Nat Gateway](https://docs.aws.amazon.com/vpc/latest/userguide/vpc-nat-gateway.html) in your VPC. 
-- Existing Amazon ECS cluster where Netskope Cloud Exchange task will be running. To learn how to work with Amazon ECS please refer to the [tutorials here](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-tutorials.html). 
-- The latest version of the AWS CLI is installed and configured. For more information about installing or upgrading your AWS CLI, see [Installing the AWS Command Line Interface](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html).
-- This solution guide assumes working knowledge with the AWS management console and AWS CLI. We also recommend that you become familiar with the following AWS services: <br />
-&emsp;&emsp; - [Amazon CloudWatch](https://aws.amazon.com/cloudwatch/) <br />
-&emsp;&emsp; - [AWS CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/GettingStarted.html) <br />
-&emsp;&emsp; - [Amazon VPC](https://aws.amazon.com/vpc/) <br />
-&emsp;&emsp; - [AWS CLI](https://aws.amazon.com/cli/) <br />
+- Amazon ECS Task Definition
+- Amazon ECS Fargate Cluster for deploying Netskope Cloud Exchange
+- Amazon Application Load Balancer (optional)
 
 ## Service Quotas
 
@@ -49,7 +31,7 @@ The solution deploys a number of resources on your AWS account. You may need to 
 
 For example, the solution deploys 4 container instances on your Amazon ECS cluster. The non-adjustable quota for the number of container instances per cluster is 5000. Consider this limit when choosing the ECS cluster to host Netskope Cloud Exchange. You can find more details about Amazon ECS service quotas [here](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service-quotas.html)
 
-|Resource|Resource count|Service Quotas references|
+|Resource|Resource Count|Service Quotas References|
 | :- | :- | :- |
 |AWS IAM Role|2|[AWS IAM service quotas](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_iam-quotas.html)|
 |AWS IAM Policy|1|[AWS IAM service quotas](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_iam-quotas.html)|
@@ -57,215 +39,328 @@ For example, the solution deploys 4 container instances on your Amazon ECS clust
 |Amazon EFS Mount Target|2|[Amazon EFS service quotas](https://docs.aws.amazon.com/efs/latest/ug/limits.html)|
 |Amazon EFS Access Point|4|[Amazon EFS service quotas](https://docs.aws.amazon.com/efs/latest/ug/limits.html)|
 |Amazon CloudWatch Log Group|1|[Amazon CloudWatch service quotas](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch_limits.html)|
-|Amazon EC2 Security Group|2|[Amazon EC2 service quotas](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-resource-limits.html)|
+|Amazon VPC|1|[Amazon VPC quotas](https://docs.aws.amazon.com/vpc/latest/userguide/amazon-vpc-limits.html)|
+|Amazon Subnets|4|[Amazon VPC quotas](https://docs.aws.amazon.com/vpc/latest/userguide/amazon-vpc-limits.html)|
+|Amazon Elastic IPs|2|[Amazon VPC quotas](https://docs.aws.amazon.com/vpc/latest/userguide/amazon-vpc-limits.html)|
+|Amazon NAT Gateways|2|[Amazon VPC quotas](https://docs.aws.amazon.com/vpc/latest/userguide/amazon-vpc-limits.html)|
+|Amazon Internet Gateway|1|[Amazon VPC quotas](https://docs.aws.amazon.com/vpc/latest/userguide/amazon-vpc-limits.html)|
+|Amazon Route Table|4|[Amazon VPC quotas](https://docs.aws.amazon.com/vpc/latest/userguide/amazon-vpc-limits.html)|
+|Amazon Application Load Balancer|1|[Application Load Balancers quotas](https://docs.aws.amazon.com/vpc/latest/userguide/amazon-vpc-limits.html)|
+|Amazon Target group|1|[Application Load Balancers quotas](https://docs.aws.amazon.com/vpc/latest/userguide/amazon-vpc-limits.html)|
+|Amazon EC2 Security Group|3|[Amazon EC2 service quotas](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-resource-limits.html)|
 |Amazon ECS Service|1|[Amazon ECS service quotas](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service-quotas.html)|
 |Amazon ECS Task|1|[Amazon ECS service quotas](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service-quotas.html)|
+|Amazon ECS Cluster|1|[Amazon ECS service quotas](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service-quotas.html)|
 |Amazon ECS Container Instance|4|[Amazon ECS service quotas](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service-quotas.html)|
 
 
-## Deployment and Configuration Steps
-### Deploying Amazon EFS Filesystem, IAM roles and Netskope CE Task Security group using CloudExchangeTemplate.yaml and creating Netskope Cloud Exchange Task Definition.
-Download the [CloudExchangeTemplate.yaml](https://github.com/netskopeoss/Netskope-CloudExchange-Amazon-ECS-Fargate/blob/main/CloudExchangeTemplate.yaml) and [CloudExchangeTaskDefinition.json](https://github.com/netskopeoss/Netskope-CloudExchange-Amazon-ECS-Fargate/blob/main/CloudExchangeTaskDefinition.json) to your computer.
+## Architecture Diagram
+![](./media/NETSKOPE-CE-Architecture-Diagram.png)
+*Fig 1. Netskope Cloud Exchange on AWS Fargate for Amazon ECS*
 
-**Step 1.1:** **Deploy the CloudFormation Stack on the AWS Security Management account**
+## Prerequisites 
+The following prerequisites are required to implement the Netskope Cloud Exchange on AWS Fargate for Amazon ECS.
 
-Sign into the AWS Security Management account as administrator and deploy the Netskope Cloud Exchange CloudFormations stack. 
+- This solution guide assumes working knowledge of the AWS management console. We also recommend that you become familiar with the following AWS services. <br/>
+&emsp;&emsp; - [AWS CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/GettingStarted.html) <br />
+&emsp;&emsp; - [Amazon ECS](https://aws.amazon.com/ecs/) <br />
+&emsp;&emsp; - [AWS Fargate](https://aws.amazon.com/fargate/) <br />
+&emsp;&emsp; - [Amazon VPC](https://aws.amazon.com/vpc/) <br />
+&emsp;&emsp; - [Amazon CloudWatch](https://aws.amazon.com/cloudwatch/) <br />
 
-1.1.1. Navigate to the AWS CloudFormation management console and choose the region you’d like to deploy the automation solutions in the Security Management account. <br />
-1.1.2. Click **Create Stack** and choose **With new resources (standard)**.<br />
+## Deployment & Configuration Steps
 
-![](.//media/NetskopeCE.09fc7e95-8fc0-4a42-9c93-89f7a36aafbe.002.png)
+Using the CloudFormation template you can deploy the Netskope Cloud Exchange in two ways.
 
-1.1.3. Choose **Upload a template file** then click on Choose file. Choose the [CloudExchangeTemplate.yaml](https://github.com/netskopeoss/Netskope-CloudExchange-Amazon-ECS-Fargate/blob/main/CloudExchangeTemplate.yaml)  from the directory on your disk where you downloaded it to, click **Open** and then click **Next**.<br />
+1. Deploy both Infrastructure + Netskope Cloud Exchange using the AWS CloudFormation
+2. Customize Infrastructure with existing resources (VPC, Subnets, NAT Gateway, ALB, ECS Cluster, etc.) and deploy Netskope Cloud Exchange using AWS CloudFormation
 
-![](.//media/NetskopeCE.09fc7e95-8fc0-4a42-9c93-89f7a36aafbe.003.png)
+### 1. Deploy both Infrastructure + Netskope Cloud Exchange using the AWS CloudFormation
 
-1.1.4. Enter the stack name and the parameters for your deployment:
+If you have your existing resources available, refer [ Customize Infrastructure with existing resources (VPC, Subnets, NAT Gateway, ALB, ECS Cluster, etc.) and deploy Netskope Cloud Exchange using AWS CloudFormation](#2-customize-infrastructure-with-existing-resources-vpc-subnets-nat-gateway-alb-ecs-cluster-etc-and-deploy-netskope-cloud-exchange-using-aws-cloudformation)
 
-|Parameters||
-| :- | :- |
-|Existing VPC Id|Enter the existing VPC Id where Netskope Cloud Exchange will be deployed|
-|Existing Private Subnet ID 1|Enter the first Subnet ID where the EFS filesystem for Netskope Cloud Exchange will be deployed.|
-|Existing Private Subnet ID 2 |Enter the second Subnet ID where the EFS filesystem for Netskope Cloud Exchange will be deployed.|
+1.1 Download the **[NetskopeCECloudFormation.yaml](https://github.com/netskopeoss/Netskope-CloudExchange-Amazon-ECS-Fargate/blob/main/CloudExchangeTemplate.yaml).**
 
-![](.//media/NetskopeCE.09fc7e95-8fc0-4a42-9c93-89f7a36aafbe.004.png)
+1.2 Deploy the CloudFormation Stack on the AWS Management account.
 
+1.2.1 Sign in to the AWS Management Console.
 
-1.1.5. Click **Next**. <br />
-1.1.6. Optionally, enter the Tags for your CloudFormation stack and / or click Next.
+1.2.2 Navigate to the AWS CloudFormation management console and choose the region you'd like to deploy the automation solution.
 
-![](.//media/NetskopeCE.09fc7e95-8fc0-4a42-9c93-89f7a36aafbe.005.png)
+1.2.3 Click on **Create stack** and choose **With new resources (standard).**
 
-1.1.7. Acknowledge creating IAM resources and click **Create stack**.
+![](./media/NETSKOPE-CE-CFT-MGMT-Console.png)
 
-![](.//media/NetskopeCE.09fc7e95-8fc0-4a42-9c93-89f7a36aafbe.006.png)
+1.2.4 Choose **Upload a template file** then click on **Choose file**. Choose the [NetskopeCECloudFormation.yaml](https://github.com/netskopeoss/Netskope-CloudExchange-Amazon-ECS-Fargate/blob/main/CloudExchangeTemplate.yaml)  from the directory on your disk where you downloaded it, click **Open**, and then click **Next**.<br />
 
-1.1.8. When CloudFormation stack is in the CREATE\_COMPLETE state, navigate to the Output tab and see the Security Group Id. <br />
-You will use this Security Group while provisioning the the Fargate Service in the Step 2.1.4 below. <br />
+![](./media/NETSKOPE-CE-Stack-Upload-Template.png)
 
-#### Note: If you choose a different Security Group while creating the Fargate Service, or choose to create a new Security Group automatically, your service will not be able to mount the EFS file system and will fail. 
+1.2.5 Enter the Stack name.
 
-You may customize to allow Netskope Cloud Exchange access to the Netskope NewEdge and third-party platforms.
-#### Please follow the instructions in the [IP Allowlisting](https://docs.netskope.com/en/ip-allowlisting.html) article on the Netskope Knowledge Portal to add the Netskope NewEdge IP addresses to the Netskope CE Task Security Group.
+![](./media/NETSKOPE-CE-Stack-Name.png)
 
+1.2.6 In the Parameters section select **True** in **Create new resources?**<br />
+Provide an appropriate value for **Environment name**.<br />
+Select **True** in **Create Application Load Balancer?** if you want to create ALB or Select **False** if you don't want to create.
 
-![](.//media/NetskopeCE.09fc7e95-8fc0-4a42-9c93-89f7a36aafbe.007.png)
+![](./media/NETSKOPE-CE-Stack-Create-Resources-True.png)
 
-1.1.9. Note the EFS File System Id (NetskopeCloudExchangeEFS), the  in the Access Points (MongoDBAccessPoint, RabbitMQAccessPoint, SSLCertAccessPoint, CustomPluginsAccessPoint), the NetskopeCloudExchangeTaskExecutionRole and the NetskopeCloudExchangeTaskRole from the CloudFormation stack output. It’ll be used late on while creating the Netskope Cloud Exchange Task Definition for Amazon ECS.
+1.2.7 Skip the **Existing resource details(applicable if 'Create new resources?' is 'False')** section and navigate to the **Network details (applicable if 'Create new resources?' is 'True').**
 
-**Step 1.2: Create Netskope Cloud Exchange Task Definition:**
+Enter the VPC name and CIDR Ranges for VPC, Private, and Public Subnets according to your network requirements, or leave the default details as it is.
 
-1.2.1. Open the CloudExchangeTaskDefinition.json file for editing and replace all occurrences of the following values as following:
+![](./media/NETSKOPE-CE-Stack-NW-Details.png)
 
-|Parameters||
-| :- | :- |
-|\<AWS-Region\>|AWS Region where Netskope Cloud Exchange been deployed|
-|\<NetskopeCloudExchangeTaskExecutionRole\>|Netskope Cloud Exchange task execution role|
-|\<NetskopeCloudExchangeTaskRole\>|Netskope Cloud Exchange task role|
-|\<NetskopeCloudExchangeEFS\>|AWS EFS File System Id created in by the CloudFormation template above and recorder in the step 1.1.9 above.|
-|\<MongoDBAccessPoint\>|Mongo DB EFS Access Point|
-|\<RabbitMQAccessPoint\>|RabbitMQ EFS Access Point|
-|\<SSLCertAccessPoint\>|SSL Certificates EFS Access Point|
-|\<CustomPluginsAccessPoint\>|CustomPlugins EFS Access Point|
+1.2.8 Enter the Environment variables required for Netskope CE Deployment and click on **Next**. <br/><br/>
+**Environment variables** <br/>
+* JWT secrets: A random secure string that will be used for signing the authentication tokens
+* Maintainance password: A maintenance password that will be used for RabbitMQ and MongoDB services (This password can be set only once)
+* Maintenance password escaped: URL encoded version of the Maintenance Password
+* TLS version: The TLS version that will be used to access the UI (TLSv1.3, TLSv1.2 TLSv1.3)
+* HTTP proxy: Proxy URL to be used for the outbound HTTP traffic
+* HTTPS proxy: Proxy URL to be used for the outbound HTTPS traffic
+* CIDR to allow access to Netskope Cloud Exchange: IP range to grant access for Netskope Cloud Exchange (*required if load balancer is to be used*)
 
-Optional: to further secure your Netskope Cloud Exchange production delpoyment, replace the following parameters in the CloudExchangeTaskDefinition.json file : <br />
+![](./media/NETSKOPE-CE-ENV-VARS.png)
 
-|Parameters|Default Values|Number of occurrences|
-| :- | :- | :- |
-|MONGODB_ROOT_PASSWORD|DBPassw0rd123|1|
-|MONGODB_PASSWORD|cteadmin|2|
+1.2.9 In the **Configure stack options** section , specify tags (key-value pairs) to apply to resources in your stack. You can add up to 50 unique tags for each stack.
 
-To change these values from the default ones, search for ALL of the occurrences of the above Default Values in the file and replace them with the new values.<br />
-For your reference, below are all of the occurrences of the above values in the task definition file:
+![](./media/NETSKOPE-CE-Stack-Tags.png)
 
-```
-  "environment": [
-                    {
-                        "name": "MONGODB_SYSTEM_LOG_VERBOSITY",
-                        "value": "0"
-                    },
-                    {
-                        "name": "MONGODB_DATABASE",
-                        "value": "cte"
-                    },
-                    {
-                        "name": "MONGODB_ROOT_PASSWORD",
-                        "value": "DBPassw0rd123"      <-----change here
-                    },
-                    {
-                        "name": "MONGODB_ADVERTISED_HOSTNAME",
-                        "value": "localhost"
-                    },
-                    {
-                        "name": "MONGODB_PASSWORD",
-                        "value": "cteadmin"          <-----change here
-                    },
-                    {
-                        "name": "MONGODB_USERNAME",
-                        "value": "cteadmin"
-                    }
-                ],
-``` 
+1.2.10 In the **Permissions** section , choose an IAM role to explicitly define how CloudFormation can create, modify, or delete resources in the stack. If you don't choose a role, CloudFormation uses permissions based on your user credentials.
 
-```
-"environment": [
-                    {
-                        "name": "MONGO_CONNECTION_STRING",
-                        "value": "mongodb://cteadmin:cteadmin@localhost:27017/cte"    <-----change the second occurence here
-                    },
-```
+![](./media/NETSKOPE-CE-Stack-Permissions.png)
 
+1.2.11 You can set additional options for your stack, like notification options and a stack policy in **Advanced Options** and click on **Next**.
 
+![](./media/NETSKOPE-CE-Stack-Advanced-Options.png)
 
+1.2.12 Review the Stack details.
 
-1.2.2. Using AWS CLI, create a new Amazon ECS Task Definition for Netskope Cloud Exchange:
+![](./media/NETSKOPE-CE-Stack-Review.png)
 
-```
-aws ecs register-task-definition --family NetskopeCloudExhange3-0 --cli-input-json file://CloudExchangeTaskDefinition.json
-```
+1.2.13 Select the checkbox of acknowledgment of IAM resources and click on **Create stack**.
 
+![](./media/NETSKOPE-CE-Stack-ACK.png)
 
-## Deploying Netskope Cloud Exchange AWS Fargate task on Amazon ECS.
-You can use the Netskope Cloud Exchange Task Definition to deploy AWS Fargate Task or Service according to your organization’s best practices using your existing automation tools. 
+1.2.14 Wait for the Creation of Stack to be completed.
 
+![](./media/NETSKOPE-CE-Stack-In-Progress.png)
 
-**Step 2.1:** **Run Netskope Cloud Exchange as a service using AWS Fargate on Amazon ECS**
+After the successful creation, you can see the list of resources by selecting the **Resources** tab.
 
+![](./media/NETSKOPE-CE-Stack-New-Resources-6.png)
+![](./media/NETSKOPE-CE-Stack-New-Resources-5.png)
+![](./media/NETSKOPE-CE-Stack-New-Resources-4.png)
+![](./media/NETSKOPE-CE-Stack-New-Resources-3.png)
+![](./media/NETSKOPE-CE-Stack-New-Resources-2.png)
+![](./media/NETSKOPE-CE-Stack-New-Resources-1.png)
 
-2.1.1. Sign into Amazon ECS management console and navigate to Task Definitions and choose NetskopeCloudExchange3-0 task
+1.2.15 To access the application, refer to [Accessing Netskope CE](#accessing-netskope-ce).
 
-![](.//media/NetskopeCE.09fc7e95-8fc0-4a42-9c93-89f7a36aafbe.008.png)
+### 2. Customize Infrastructure with existing resources (VPC, Subnets, NAT Gateway, ALB, ECS Cluster, etc.) and deploy Netskope Cloud Exchange using AWS CloudFormation
 
-2.1.2. Click on Actions->Create Service
+2.1 Download the **[NetskopeCECloudFormation.yaml](https://github.com/netskopeoss/Netskope-CloudExchange-Amazon-ECS-Fargate/blob/main/CloudExchangeTemplate.yaml)**.
 
-![](.//media/NetskopeCE.09fc7e95-8fc0-4a42-9c93-89f7a36aafbe.009.png)
+2.2 Deploy the CloudFormation Stack on the AWS Management account.
 
-2.1.3. Set the following configuration for the new service:
+2.2.1 Sign in to the AWS Management Console.
 
+2.2.2 Navigate to the AWS CloudFormation management console and choose the region you'd like to deploy the automation solution.
 
-|<p>**Launch type**</p><p></p>|Fargate|
-| :- | :- |
-|<p>**Operating system family**</p><p></p>|Linux|
-|<p>**Platform version**</p><p></p>|LATEST|
-|<p>**Cluster**</p><p></p>|Choose the Amazon ECS cluster you’d like to run Netskope Cloud Exchange on|
-|<p>**Service name**</p><p></p>|NetskopeCloudExchange (you can choose the name according to your preferences and best practices)|
-|<p>**Service type**</p><p></p>|REPLICA|
-|<p>**Number of tasks**</p><p></p>|1|
-|<p>**Minimum healthy percent**</p><p></p>|100|
-|<p>**Maximum percent**</p><p></p>|200|
-|<p>**Deployment circuit breaker**</p><p></p>|Disabled|
+2.2.3 Click on **Create Stack** and choose **With new resources (standard)**.
 
-Leave other parameters unchanged and click Next step
+![](./media/NETSKOPE-CE-CFT-MGMT-Console.png)
 
-![](.//media/NetskopeCE.09fc7e95-8fc0-4a42-9c93-89f7a36aafbe.010.png)
+2.2.4 Choose **Upload a template file** then click on Choose file. Choose the [NetskopeCECloudFormation.yaml](https://github.com/netskopeoss/Netskope-CloudExchange-Amazon-ECS-Fargate/blob/main/CloudExchangeTemplate.yaml)  from the directory on your disk where you downloaded it to, click **Open** and then click **Next**.<br />
 
-![](.//media/NetskopeCE.09fc7e95-8fc0-4a42-9c93-89f7a36aafbe.011.png)
+![](./media/NETSKOPE-CE-Stack-Upload-Template.png)
 
-2.1.4. Choose the same VPC and VPC Subnets you used to create an EFS File System using CloudExchangeTemplate.yaml.
+2.2.5 Enter the Stack name.
 
-Choose the security group you noted in the step 1.1.8 above and click Next step.
+![](./media/NETSKOPE-CE-Stack-Name.png)
 
-#### Note: If you choose a different Security Group while creating the Fargate Service, or choose to create a new Security Group automatically, your service will not be able to mount the EFS file system and will fail. 
+2.2.6 In the Parameters section select **False** in **Create new resources?**.<br />
+Provide an appropriate value for **Environment name**.<br />
+Select **True** in **Create Application Load Balancer?** if you want to create ALB or Select **False** if you don't want to create.
 
-For the best security practices, we do not recommend assigning public IP address to the Netskope Cloud Exchange service, but rather accessing it using private IP address either via a jump host, Amazon Direct Connect or [Netskope Private Access](https://www.netskope.com/products/private-access) (NPA).
+![](./media/NETSKOPE-CE-Stack-Create-Resources-False.png)
 
-When first installed, Cloud Exchange does not require an SSL certificate and the web server can be reached over an unencrypted connection. You can either front-end Netskope Cloud Exchange with [Application Load Balancer](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/introduction.html) and deploy an SSL certificate there, or install a private SSL certificate on the Netskope Cloud Exchange. To learn how to install a private SSL certificate on the Netskope Cloud Exchange please see the documentation [here](https://docs.netskope.com/en/install-cloud-exchange.html). To learn how to create an HTTPS listener and install SSL certificate on the Application Load Balancer, please follow [this](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/create-https-listener.html) documentation. 
+2.2.7 Provide the **Existing resources details (applicable if 'Create new resources?' is 'False')**.
 
-To enable Netskope Cloud Exchange communicating with external third-party services we recommend deploying [Amazon Nat Gateway](https://docs.aws.amazon.com/vpc/latest/userguide/vpc-nat-gateway.html). 
+*Notes* 
+* *You have to enter the details of the resources that are available in your existing AWS infrastructure.*<br/>
+* *Consider the following for Application Load Balancer.*
+  * *If you have selected **False** in **Create Application Load Balancer?** and **Existing ARN of target group for ALB** field is **Blank** - No ALB will be created.*
+  * *If you have selected **False** in **Create Application Load Balancer?** and **Existing ARN of target group for ALB** field is **Provided** - Existing ALB will be Used.* <br/>
+* *Consider the following for AWS ECS Cluster.* <br/>
+  * *If **Existing  ECS cluster name** field is blank - A new ECS Cluster will be created.*
+  * *If **Existing  ECS cluster name** field is provided - It will check for the Cluster, if the Cluster is present, then it will be used as an existing resource or else it will throw the error at the time of stack creation.*
 
+![](./media/NETSKOPE-CE-Stack-Existing-Resources.png)
 
+To Find Existing resources details please follow the details below.
+* For VPC ID - [Finding a VPC ID](#finding-a-vpc-id) 
+* For Subnet ID - [Finding a Subnet ID](#finding-a-subnet-id)
+* For VPC CIDR block - [Finding a VPC CIDR block](#finding-a-vpc-cidr-block)
+* For ARN of target group for ALB - [Finding ARN of target group for ALB](#finding-arn-of-target-group-for-alb)
+* For ECS Cluster Name - [Finding ECS Cluster Name](#finding-ecs-cluster-name)
 
+2.2.8 Enter the Environment variables required for Netskope CE Deployment and click on **Next**. <br/><br/>
+**Environment variables** <br/>
+* JWT secrets: A random secure string that will be used for signing the authentication tokens
+* Maintainance password: A maintenance password that will be used for RabbitMQ and MongoDB services (This password can be set only once)
+* Maintenance password escaped: URL encoded version of the Maintenance Password
+* TLS version: The TLS version that will be used to access the UI (TLSv1.3, TLSv1.2 TLSv1.3)
+* HTTP proxy: Proxy URL to be used for the outbound HTTP traffic
+* HTTPS proxy: Proxy URL to be used for the outbound HTTPS traffic
+* CIDR to allow access to Netskope Cloud Exchange: IP range to grant access for Netskope Cloud Exchange (*required if load balancer is to be used*)
 
-![](.//media/NetskopeCE.09fc7e95-8fc0-4a42-9c93-89f7a36aafbe.012.png)
+![](./media/NETSKOPE-CE-ENV-VARS.png)
 
-![](.//media/NetskopeCE.09fc7e95-8fc0-4a42-9c93-89f7a36aafbe.013.png)
+2.2.9 In the **Configure stack options** section, specify tags (key-value pairs) to apply to resources in your stack. You can add up to 50 unique tags for each stack.
 
-2.1.5. Leave Set Auto Scaling unchanged and click Next step
+![](./media/NETSKOPE-CE-Stack-Tags.png)
 
-![](.//media/NetskopeCE.09fc7e95-8fc0-4a42-9c93-89f7a36aafbe.014.png)
+2.2.10 In the **Permissions** section, choose an IAM role to explicitly define how CloudFormation can create, modify, or delete resources in the stack. If you don't choose a role, CloudFormation uses permissions based on your user credentials.
 
-2.1.6. Review the configuration and click Create service
-2.1.7. To monitor the task status, navigate to Clusters->your ECS cluster->Tasks menu
+![](./media/NETSKOPE-CE-Stack-Permissions.png)
 
+2.2.11 You can set additional options for your stack, like notification options and a stack policy in **Advanced Options** and click on **Next**.
 
-![](.//media/NetskopeCE.09fc7e95-8fc0-4a42-9c93-89f7a36aafbe.015.png)
+![](./media/NETSKOPE-CE-Stack-Advanced-Options.png)
 
-and click on the NetskopeCloudExchange task.
+2.2.12 Review the Stack details.
 
-Wait till the task status will be RUNNING with all four containers HEALTHY.
+![](./media/NETSKOPE-CE-Stack-Review.png)
 
+2.2.13 Select the checkbox of acknowledgment of IAM resources and click on **Create stack**.
 
+![](./media/NETSKOPE-CE-Stack-ACK.png)
 
-![](.//media/NetskopeCE.09fc7e95-8fc0-4a42-9c93-89f7a36aafbe.016.png)
 
-Now you can use the task Private IP address to sign into the Netskope Cloud Exchange. 
+2.2.14 Wait for the Creation of Stack to be completed.
 
-After initial installation Netskope Cloud Exchange is available via HTTP port 3000 on the Task Private IP address highlighted above. You can access it via http://[Task Private IP address]:3000 <br />
+![](./media/NETSKOPE-CE-Stack-In-Progress.png)
 
-We do not recommend assigning public IP address to Netskope Cloud Exchange. Always connect to the Netskope Cloud Exchange via the task Private IP addess. 
-To enable Netskope Cloud Exchange communicating with external third-party services we recommend deploying [Amazon Nat Gateway](https://docs.aws.amazon.com/vpc/latest/userguide/vpc-nat-gateway.html) in your VPC. 
+After the successful creation, you can see the list of resources by selecting the **Resources** tab. <br/>
 
-As mentioned in the step 1.1.8 above, add the Netskope IP addresses from the [IP Allowlisting](https://docs.netskope.com/en/ip-allowlisting.html) article on the Netskope Knowledge Portal to the Netskope Cloud Exchange Security Group egress rules, to allow Netskope Cloud Exchange HTTPS access to the Netskope Security Cloud.
+![](./media/NETSKOPE-CE-Stack-Existing-Resources-3.png)
+![](./media/NETSKOPE-CE-Stack-Existing-Resources-2.png)
+![](./media/NETSKOPE-CE-Stack-Existing-Resources-1.png)
 
-For complete documentation on how to use Netskope Cloud Exchange please refer to the [Netskope Cloud Exchange documentation](https://docs.netskope.com/en/netskope-cloud-exchange.html). 
 
+2.2.15 To access the application, refer to [Accessing Netskope CE](#accessing-netskope-ce).
+
+### Finding a VPC ID
+Go to VPC Console, select **VPCs** and the relevant VPC. The VPC details page for the selected VPC opens with information including the VPC ID.
+
+![](./media/NETSKOPE-CE-VPC-ID-Details.png)
+
+### Finding a Subnet ID
+Go to VPC Console, select **VPCs** and the relevant VPC. The VPC details page for the selected VPC opens with a table of subnets, click a subnet ID to open the details page and find the Subnet ID.
+
+![](./media/NETSKOPE-CE-Subnet-ID-Details.png)
+
+### Finding a VPC CIDR block
+Go to VPC Console, select **VPCs** and the relevant VPC. The VPC details page for the selected VPC opens with information including the CIDRs section.
+
+![](./media/NETSKOPE-CE-VPC-ID-Details.png)
+
+### Finding ARN of target group for ALB
+Go to EC2 console, select **Target Groups** and relevant Target Group. The Target Group details page for the selected Target Group opens the information including the ARN of Target Group.
+
+![](./media/NETSKOPE-CE-Target-Group-ARN-Details.png)
+
+### Finding ECS Cluster Name
+Go to ECS Console, select **Clusters** and relevant Cluster. The Cluster details page for the selected Cluster opens the information including the Cluster Name.
+
+![](./media/NETSKOPE-CE-ECS-Cluster-Details.png)
+
+## Accessing Netskope CE 
+
+**Access Netskope Cloud Exchange through Jumphost**
+
+1. Go to EC2 Console, select **Launch instance**.
+
+![](./media/NETSKOPE-CE-BH-Launch.png)
+
+2. Provide the name for an instance and select Application and OS Image for instance.
+
+![](./media/NETSKOPE-CE-BH-NAME-OS.png)
+
+3. Select instance type and key pair to SSH into it.<br/>
+*Note - Create new key pair if you are not having any key pair for login*.
+
+![](./media/NETSKOPE-CE-BH-Key-Pair.png)
+
+4. Edit the network settings and provide the details.
+
+*Notes* 
+* *VPC for instance and your CloudFormation resources must be same.*
+* *Select the one of the public subnets to launch the instance.*
+* *Select **Enable** the **Auto-assign public IP** to assign public IP.*
+
+![](./media/NETSKOPE-CE-BH-NW-Setting.png) 
+
+5. Click on **Launch instance** and leave the other details as default. Go to EC2 Console and wait for **Instance state** of your instance to become **Running**. <br/>
+
+![](./media/NETSKOPE-CE-BH-Running.png)
+
+6. Select the instance and Click on **Connect** which will open **Connect to instance** page. Click on **SSH Client** tab and copy the SSH command to the clipboard.
+
+![](./media/NETSKOPE-CE-BH-SSH.png)
+
+6. Go to EC2 Console, Select **Security Groups** and relevant security group. Click on **Edit inbound rules** and allow 8000 port.
+
+![](./media/NETSKOPE-CE-BH-SG.png)
+
+7. Go to EC2 Console, Select **Load Balancers** and relevant ALB. The ALB details page for the selected ALB opens the information including the DNS Name of ALB. Copy the DNS Name of ALB to the clipboard.
+
+![](./media/NETSKOPE-CE-ALB-Details.png)
+
+8. Open Git Bash or terminal of end user's local system and paste the following command that initiates the port forwarding from the local system to AWS EC2 Instance.<br/>
+*Note - If ALB was not used in deployment, go to 8.2 Applocation Load Balancer is not present.*
+
+   **8.1 Application Load Balancer is present** <br/>
+  **Command:**   ssh -L LOCAL_HOST_PORT:ALB_DNS_NAME:LOAD_BALANCER_PORT  <br/>
+  **Example:** ssh -i "test-demo.pem" ubuntu@ec2-54-193-33-60.us-west-1.compute.amazonaws.com -L 8000:internal-NetskopeCELB-netskope-ce.us-west-1.elb.amazonaws.com:80
+  ![](./media/NETSKOPE-CE-Port-Forward.png)
+
+   **8.2 Application Load Balancer is not present** <br/>
+   **Command:**   ssh -L LOCAL_HOST_PORT:FARGATE_TASK_PRIVATE_IP:3000
+   **Example:**   ssh -i "test-demo.pem" ubuntu@ec2-54-193-33-60.us-west-1.compute.amazonaws.com -L 8000:172.16.2.86:3000<br/>
+   *Note - To find Private IP of Task created in Fargate Cluster, refer to [Finding Private IP of Task in Fargate Cluster](#finding-private-ip-of-task-in-fargate-cluster)*
+  ![](./media/NETSKOPE-CE-Port-Forward-without-ALB.png)
+
+
+9. Type *localhost:8000* in browser and access the application.
+
+![](./media/NETSKOPE-CE-App-Localhost-Login.png)
+
+### Finding Private IP of Task in Fargate Cluster
+Go to ECS Console, select **Clusters** and relevant Cluster.The Cluster details page for the selected Cluster opens the information. Click on **Tasks** tab and select the relevant task.
+
+![](./media/NETSKOPE-CE-BH-Cluster_Task.png)
+
+After selecting the relevent task, it opens the information including the private IP.
+
+![](./media/NETSKOPE-CE-BH-Task-Private-IP.png)
+
+## Best Practices (Dos and Don'ts)
+<div style="text-align: justify">
+
+* For the best security practices, we do not recommend assigning a public IP address to the Netskope Cloud Exchange service, but rather accessing it using a private IP address either via a jump host, Amazon Direct Connect, or [Netskope Private Access](https://www.netskope.com/products/private-access) (NPA).
+
+* When first installed, Cloud Exchange does not require an SSL certificate and the web server can be reached over an unencrypted connection. You can either access front-end Netskope Cloud Exchange with [Application Load Balancer](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/introduction.html) and deploy an SSL certificate there, or install a private SSL certificate on the Netskope Cloud Exchange. To learn how to install a private SSL certificate on the Netskope Cloud Exchange please see the documentation [here](https://docs.netskope.com/en/install-cloud-exchange.html). To learn how to create an HTTPS listener and install an SSL certificate on the Application Load Balancer, please follow [this](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/create-https-listener.html) documentation. 
+
+* Manually created resources must be deleted before deleting the stack, as CloudFormation will only delete the resources created using a template file.
+</div>
+
+## Basic Troubleshooting
+<div style="text-align: justify">
+
+* There is a default limit of 5 Elastic IP addresses per Region per AWS account.For more information about limits and how to request an increase, see [Elastic IP address limit](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/elastic-ip-addresses-eip.html#using-instance-addressing-limit)
+* Don't provide long resource name - When the stack is created using CloudFormation, prefix or suffix will be added as per the stack name in resource's name. It will give error if the eventual resource name turns out to be too long.
+* If using existing load balancer, please make sure 80 port is not being used by another service, it will be used for accessing Netskope Cloud Exchange service.
+</div>
