@@ -16,7 +16,7 @@ This document will guide you on how to deploy Netskope Cloud Exchange on AWS Far
 
 This solution consists of the following components:
 
-**NetskopeCECloudFormation.yaml** - AWS CloudFormation template that deploys the following resources:
+**CloudExchangeTemplate.yaml** - AWS CloudFormation template that deploys the following resources:
 
 - Networking Resources - VPC, Private Subnets (ECS Cluster, ALB), Public Subnets (for NAT Gateway), Internet Gateway, Security Groups 
 - Amazon EFS filesystem for Netskope Cloud Exchange
@@ -79,7 +79,7 @@ Using the CloudFormation template you can deploy the Netskope Cloud Exchange in 
 
 If you have your existing resources available, refer [ Customize Infrastructure with existing resources (VPC, Subnets, NAT Gateway, ALB, ECS Cluster, etc.) and deploy Netskope Cloud Exchange using AWS CloudFormation](#2-customize-infrastructure-with-existing-resources-vpc-subnets-nat-gateway-alb-ecs-cluster-etc-and-deploy-netskope-cloud-exchange-using-aws-cloudformation)
 
-1.1 Download the **[NetskopeCECloudFormation.yaml](https://github.com/netskopeoss/Netskope-CloudExchange-Amazon-ECS-Fargate/blob/main/CloudExchangeTemplate.yaml).**
+1.1 Download the **[CloudExchangeTemplate.yaml](https://github.com/netskopeoss/Netskope-CloudExchange-Amazon-ECS-Fargate/blob/main/CloudExchangeTemplate.yaml).**
 
 1.2 Deploy the CloudFormation Stack on the AWS Management account.
 
@@ -91,7 +91,7 @@ If you have your existing resources available, refer [ Customize Infrastructure 
 
 ![](./media/NETSKOPE-CE-CFT-MGMT-Console.png)
 
-1.2.4 Choose **Upload a template file** then click on **Choose file**. Choose the [NetskopeCECloudFormation.yaml](https://github.com/netskopeoss/Netskope-CloudExchange-Amazon-ECS-Fargate/blob/main/CloudExchangeTemplate.yaml)  from the directory on your disk where you downloaded it, click **Open**, and then click **Next**.<br />
+1.2.4 Choose **Upload a template file** then click on **Choose file**. Choose the [CloudExchangeTemplate.yaml](https://github.com/netskopeoss/Netskope-CloudExchange-Amazon-ECS-Fargate/blob/main/CloudExchangeTemplate.yaml)  from the directory on your disk where you downloaded it, click **Open**, and then click **Next**.<br />
 
 ![](./media/NETSKOPE-CE-Stack-Upload-Template.png)
 
@@ -160,7 +160,7 @@ After the successful creation, you can see the list of resources by selecting th
 
 ### 2. Customize Infrastructure with existing resources (VPC, Subnets, NAT Gateway, ALB, ECS Cluster, etc.) and deploy Netskope Cloud Exchange using AWS CloudFormation
 
-2.1 Download the **[NetskopeCECloudFormation.yaml](https://github.com/netskopeoss/Netskope-CloudExchange-Amazon-ECS-Fargate/blob/main/CloudExchangeTemplate.yaml)**.
+2.1 Download the **[CloudExchangeTemplate.yaml](https://github.com/netskopeoss/Netskope-CloudExchange-Amazon-ECS-Fargate/blob/main/CloudExchangeTemplate.yaml)**.
 
 2.2 Deploy the CloudFormation Stack on the AWS Management account.
 
@@ -172,7 +172,7 @@ After the successful creation, you can see the list of resources by selecting th
 
 ![](./media/NETSKOPE-CE-CFT-MGMT-Console.png)
 
-2.2.4 Choose **Upload a template file** then click on Choose file. Choose the [NetskopeCECloudFormation.yaml](https://github.com/netskopeoss/Netskope-CloudExchange-Amazon-ECS-Fargate/blob/main/CloudExchangeTemplate.yaml)  from the directory on your disk where you downloaded it to, click **Open** and then click **Next**.<br />
+2.2.4 Choose **Upload a template file** then click on Choose file. Choose the [CloudExchangeTemplate.yaml](https://github.com/netskopeoss/Netskope-CloudExchange-Amazon-ECS-Fargate/blob/main/CloudExchangeTemplate.yaml)  from the directory on your disk where you downloaded it to, click **Open** and then click **Next**.<br />
 
 ![](./media/NETSKOPE-CE-Stack-Upload-Template.png)
 
