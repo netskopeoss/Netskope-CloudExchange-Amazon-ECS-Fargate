@@ -623,7 +623,7 @@ Resources:
     Properties:
       ContainerDefinitions:
         - Name: mongodb-primary
-          Image: "bitnami/mongodb:4.4"
+          Image: "709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/mongodb:05252022"
           Cpu: 0
           PortMappings:
             - ContainerPort: 27017
@@ -671,7 +671,7 @@ Resources:
             StartPeriod: 60
 
         - Name: core
-          Image: "netskopetechnicalalliances/cloudexchange:core3-latest"
+          Image: "709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/core3:7292022"
           Cpu: 0
           PortMappings: []
           Essential: true
@@ -725,7 +725,7 @@ Resources:
             StartPeriod: 60
 
         - Name: ui
-          Image: "netskopetechnicalalliances/cloudexchange:ui3-latest"
+          Image: "709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/ui3:7292022"
           Cpu: 0
           PortMappings:
             - ContainerPort: 3000
@@ -762,7 +762,7 @@ Resources:
             StartPeriod: 60
 
         - Name: rabbitmq-stats
-          Image: "crestsystems/cloudexchange:rabbitmq-latest"
+          Image: "709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/rabbitmq:05252022"
           Cpu: 0
           PortMappings:
             - ContainerPort: 15672
