@@ -671,7 +671,7 @@ Resources:
             StartPeriod: 60
 
         - Name: core
-          Image: "709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/core3:7292022"
+          Image: "709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/core3:latest"
           Cpu: 0
           PortMappings: []
           Essential: true
@@ -725,7 +725,7 @@ Resources:
             StartPeriod: 60
 
         - Name: ui
-          Image: "709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/ui3:7292022"
+          Image: "709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/ui3:latest"
           Cpu: 0
           PortMappings:
             - ContainerPort: 3000
