@@ -18,9 +18,9 @@ Metadata:
       - Label:
           default: "Existing resources details (applicable if 'Create new resources?' is 'False')"
         Parameters:
-          - VPCId
-          - PrivateSubnet1ID
-          - PrivateSubnet2ID
+          - ExistingVPCId
+          - ExistingPrivateSubnet1ID
+          - ExistingPrivateSubnet2ID
           - ExistingVPCCidr
           - ExistingECSCluster
 
@@ -54,11 +54,11 @@ Metadata:
         default: "First private subnet CIDR range"
       PrivateSubnet2CIDR:
         default: "Second private subnet CIDR range"
-      VPCId:
+      ExistingVPCId:
         default: "Existing VPC ID"
-      PrivateSubnet1ID:
+      ExistingPrivateSubnet1ID:
         default: "Existing first private subnet ID"
-      PrivateSubnet2ID:
+      ExistingPrivateSubnet2ID:
         default: "Existing second private subnet ID"
       CreateResources:
         default: "Create new resources?"
@@ -125,17 +125,17 @@ Parameters:
     Type: String
     Default: 172.16.2.0/24
 
-  VPCId:
+  ExistingVPCId:
     Type: String
     Default: ""
     Description: "Enter the existing VPC ID where Netskope Cloud Exchange will be deployed (required if 'Create new resources?' is 'False')"
 
-  PrivateSubnet1ID:
+  ExistingPrivateSubnet1ID:
     Type: String
     Default: ""
     Description: "Enter the first subnet ID (in first availability zone) where the EFS filesystem for Netskope Cloud Exchange will be deployed. Note that custom resource Lambda function in this stack should be able to communicate from this subnet to Amazon S3 regional endpoint (required if 'Create new resources?' is 'False')"
 
-  PrivateSubnet2ID:
+  ExistingPrivateSubnet2ID:
     Type: String
     Default: ""
     Description: "Enter the second subnet ID (in second availability zone) where the EFS filesystem for Netskope Cloud Exchange will be deployed. Note that custom resource Lambda function in this stack should be able to communicate from this subnet to Amazon S3 regional endpoint (required if 'Create new resources?' is 'False')"
@@ -515,7 +515,7 @@ Resources:
   TaskSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      VpcId: !If [CreateNewResources, !Ref VPC, !Ref VPCId]
+      VpcId: !If [CreateNewResources, !Ref VPC, !Ref ExistingVPCId]
       GroupName: !Sub "${AWS::StackName}-NetskopeCloudExchangeTaskGroup"
       GroupDescription: Used by Netskope CloudExchange ECS task
       SecurityGroupIngress:
@@ -541,7 +541,7 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Condition: CreateALB
     Properties:
-      VpcId: !If [CreateNewResources, !Ref VPC, !Ref VPCId]
+      VpcId: !If [CreateNewResources, !Ref VPC, !Ref ExistingVPCId]
       GroupName: !Sub "${AWS::StackName}-NetskopeCloudExchangeALBGroup"
       GroupDescription: Used by Netskope ALB
       SecurityGroupIngress:
@@ -560,7 +560,7 @@ Resources:
   NetskopeCloudExchangeEFSSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      VpcId: !If [CreateNewResources, !Ref VPC, !Ref VPCId]
+      VpcId: !If [CreateNewResources, !Ref VPC, !Ref ExistingVPCId]
       GroupDescription: Grants EFS access to the VPC subnets
       SecurityGroupIngress:
         - IpProtocol: tcp
@@ -596,7 +596,7 @@ Resources:
     Properties:
       FileSystemId: !Ref NetskopeCloudExchangeEFS
       SubnetId:
-        !If [CreateNewResources, !Ref PrivateSubnet1, !Ref PrivateSubnet1ID]
+        !If [CreateNewResources, !Ref PrivateSubnet1, !Ref ExistingPrivateSubnet1ID]
       SecurityGroups:
         - !Ref NetskopeCloudExchangeEFSSecurityGroup
 
@@ -605,7 +605,7 @@ Resources:
     Properties:
       FileSystemId: !Ref NetskopeCloudExchangeEFS
       SubnetId:
-        !If [CreateNewResources, !Ref PrivateSubnet2, !Ref PrivateSubnet2ID]
+        !If [CreateNewResources, !Ref PrivateSubnet2, !Ref ExistingPrivateSubnet2ID]
       SecurityGroups:
         - !Ref NetskopeCloudExchangeEFSSecurityGroup
 
@@ -936,7 +936,7 @@ Resources:
       Matcher:
         HttpCode: "200"
       UnhealthyThresholdCount: 5
-      VpcId: !If [CreateNewResources, !Ref VPC, !Ref VPCId]
+      VpcId: !If [CreateNewResources, !Ref VPC, !Ref ExistingVPCId]
 
   AccessLogS3Bucket:
     Type: 'AWS::S3::Bucket'
@@ -983,7 +983,7 @@ Resources:
       Subnets:  !If [
         CreateNewResources,
         [!Ref PrivateSubnet1, !Ref PrivateSubnet2], 
-        [!Ref PrivateSubnet1ID, !Ref PrivateSubnet2ID]
+        [!Ref ExistingPrivateSubnet1ID, !Ref ExistingPrivateSubnet2ID]
       ]
       Type: application
       LoadBalancerAttributes: 
@@ -1025,6 +1025,7 @@ Resources:
 
   LambdaRole:
     Type: AWS::IAM::Role
+    Condition: CreateNewResources
     DependsOn: VPC
     Properties:
       RoleName: !Sub LambdaRole_${EnvName}
@@ -1197,7 +1198,7 @@ Resources:
             !If [
               CreateNewResources,
               [!Ref PrivateSubnet1, !Ref PrivateSubnet2],
-              [!Ref PrivateSubnet1ID, !Ref PrivateSubnet2ID],
+              [!Ref ExistingPrivateSubnet1ID, !Ref ExistingPrivateSubnet2ID],
             ]
 
   ECSClusterServiceWithoutALB:
@@ -1223,14 +1224,14 @@ Resources:
             !If [
               CreateNewResources,
               [!Ref PrivateSubnet1, !Ref PrivateSubnet2],
-              [!Ref PrivateSubnet1ID, !Ref PrivateSubnet2ID],
+              [!Ref ExistingPrivateSubnet1ID, !Ref ExistingPrivateSubnet2ID],
             ]
 
 
 Outputs:
   VPC:
     Description: A reference to the created VPC
-    Value: !If [CreateNewResources, !Ref VPC, !Ref VPCId]
+    Value: !If [CreateNewResources, !Ref VPC, !Ref ExistingVPCId]
 
   PrivateSubnets:
     Description: A list of the public subnets
@@ -1238,16 +1239,16 @@ Outputs:
       !If [
         CreateNewResources,
         !Join [",", [!Ref PrivateSubnet1, !Ref PrivateSubnet2]],
-        !Join [",", [!Ref PrivateSubnet1ID, !Ref PrivateSubnet2ID]],
+        !Join [",", [!Ref ExistingPrivateSubnet1ID, !Ref ExistingPrivateSubnet2ID]],
       ]
 
   PrivateSubnet1:
     Description: A reference to the public subnet in the 1st Availability Zone
-    Value: !If [CreateNewResources, !Ref PrivateSubnet1, !Ref PrivateSubnet1ID]
+    Value: !If [CreateNewResources, !Ref PrivateSubnet1, !Ref ExistingPrivateSubnet1ID]
 
   PrivateSubnet2:
     Description: A reference to the public subnet in the 2nd Availability Zone
-    Value: !If [CreateNewResources, !Ref PrivateSubnet2, !Ref PrivateSubnet2ID]
+    Value: !If [CreateNewResources, !Ref PrivateSubnet2, !Ref ExistingPrivateSubnet2ID]
 
   NetskopeCloudExchangeEFS:
     Value: !Ref NetskopeCloudExchangeEFS
