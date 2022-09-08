@@ -162,6 +162,8 @@ Enter the VPC name and CIDR Ranges for VPC, Private, and Public Subnets accordin
 
 ![](./media/NETSKOPE-CE-Stack-Review.png)
 
+![](./media/NETSKOPE-CE-Stack-Create_Resources_List.png)
+
 1.2.14 Select the checkbox of acknowledgment of IAM resources and click on **Create stack**.
 
 ![](./media/NETSKOPE-CE-Stack-ACK.png)
@@ -276,6 +278,8 @@ To Find Existing resources details please follow the details below.
 2.2.13 Review the Stack details.
 
 ![](./media/NETSKOPE-CE-Stack-Review.png)
+
+![](./media/NETSKOPE-CE-Stack-Existing-Resources_List.png)
 
 2.2.14 Select the checkbox of acknowledgment of IAM resources and click on **Create stack**.
 

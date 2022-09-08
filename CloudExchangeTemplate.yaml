@@ -952,6 +952,38 @@ Resources:
                       - !Split
                         - "/"
                         - !Ref "AWS::StackId"
+      BucketEncryption: 
+        ServerSideEncryptionConfiguration: 
+        - ServerSideEncryptionByDefault:
+            SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: TRUE
+        BlockPublicPolicy: TRUE
+        IgnorePublicAcls: TRUE
+        RestrictPublicBuckets: TRUE
+      AccessControl: Private
+      LoggingConfiguration:
+        DestinationBucketName: !Ref LoggingBucket
+        LogFilePrefix: access-logs
+      NotificationConfiguration:
+        EventBridgeConfiguration:
+          EventBridgeEnabled: TRUE
+      LifecycleConfiguration:
+        Rules:
+          - Id: LifecycleRule
+            Prefix: glacier
+            Status: Enabled
+            ExpirationInDays: 365
+            Transitions:
+              - TransitionInDays: 1
+                StorageClass: GLACIER
+
+  LoggingBucket:
+    Type: 'AWS::S3::Bucket'
+    Condition: CreateALB
+    DeletionPolicy: Retain
+    Properties:
+      AccessControl: LogDeliveryWrite
 
   AccessLogBucketPolicy:
     Type: AWS::S3::BucketPolicy
@@ -971,6 +1003,17 @@ Resources:
               - - 'arn:aws:s3:::'
                 - !Ref AccessLogS3Bucket
                 - /*
+        - Effect: Deny
+          Principal: '*'
+          Action: 's3:*'
+          Resource: !Join
+              - ''
+              - - 'arn:aws:s3:::'
+                - !Ref AccessLogS3Bucket
+                - /*
+          Condition:
+            Bool:
+              aws:SecureTransport: false
 
   NetskopeLB:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
