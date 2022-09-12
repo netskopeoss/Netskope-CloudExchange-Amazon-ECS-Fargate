@@ -109,16 +109,20 @@ If you have your existing resources available, refer [ Customize Infrastructure 
 
 *Notes* <br/>
 *  *If you select **True** in **Create Application Load Balancer?**, then following implementations are applicable.* <br/>
-    * *Access logs for ALB will be enabled.*
-    * *S3 bucket and a respective bucket policy will be created for storing access logs of ALB. The name of S3 bucket will be assigned as per the format given below.* <br/>
+    * *Access logs for ALB will be enabled.* <br/>
+    * *S3 bucket and a respective bucket policy will be created for storing access logs of ALB. The name of ALB S3 bucket will be assigned as per the format given below.* <br/>
     *Format: nce-REGION-STACK_ID* <br/>
     *Example: nce-us-west-2-24c538a0-244d-11ed-9b54-025f9a3a09a6* <br/>
-    * *You can view access logs in this S3 bucket after stack creation.*
+	* *S3 logging bucket and a respective logging bucket policy will be created for storing server access logs of above-created ALB S3 bucket. The name of S3 logging bucket will be automatically assigned by the CloudFormation.* <br/>
+	*Format: STACK_NAME-loggingbucket-RANDOM_ALPHANUMERIC_STRING* <br/>
+	*Example: nce-loggingbucket-1aln42m8gv711* <br/>
+    * *You can view logs in both these S3 buckets after stack creation.* <br/>
+	* *Post stack creation, for security reasons, it is recommended to enable bucket notifications manually for both the buckets created above by CloudFormation - [Ref](https://docs.aws.amazon.com/securityhub/latest/userguide/securityhub-standards-fsbp-controls.html#fsbp-s3-11).* <br/>
 * *If you select **False** in **Create Application Load Balancer?**, then following implementations are applicable.* <br/>
-  * *If you have selected **False** in **Create Application Load Balancer?** and **Existing ARN of target group for ALB** field is **Blank** - No ALB will be created.*
+  * *If you have selected **False** in **Create Application Load Balancer?** and **Existing ARN of target group for ALB** field is **Blank** - No ALB will be created.* <br/>
   * *If you have selected **False** in **Create Application Load Balancer?** and **Existing ARN of target group for ALB** field is **Provided** - Existing ALB will be Used.* <br/>
-    * *To find ARN of target group for ALB, please follow - [Finding ARN of target group for ALB](#finding-arn-of-target-group-for-alb).*
-    *  *In this case, it is recommended to enable access log and create S3 bucket and respective bucket policy to store logs of ALB.*
+    * *To find ARN of target group for ALB, please follow - [Finding ARN of target group for ALB](#finding-arn-of-target-group-for-alb).* <br/>
+    * *In this case, it is recommended to enable access logs and create S3 bucket and respective bucket policy to store logs of ALB. It is also recommended to enable the server access logs in a logging bucket and an associated logging bucket policy for the created ALB S3 bucket - [Ref](https://docs.aws.amazon.com/securityhub/latest/userguide/securityhub-standards-fsbp-controls.html#fsbp-s3-9). Post stack creation, for security reasons, it is also recommended to enable bucket notifications manually for both these buckets for security reasons - [Ref](https://docs.aws.amazon.com/securityhub/latest/userguide/securityhub-standards-fsbp-controls.html#fsbp-s3-11).*
 
 ![](./media/NETSKOPE-CE-Stack-ALB-Details.png)
 
@@ -217,16 +221,20 @@ After the successful creation, you can see the list of resources by selecting th
 
 *Notes* <br/>
 *  *If you select **True** in **Create Application Load Balancer?**, then following implementations are applicable.* <br/>
-    * *Access logs for ALB will be enabled.*
+    * *Access logs for ALB will be enabled.* <br/>
     * *S3 bucket and a respective bucket policy will be created for storing access logs of ALB. The name of S3 bucket will be assigned as per the format given below.* <br/>
     *Format: nce-REGION-STACK_ID* <br/>
     *Example: nce-us-west-2-24c538a0-244d-11ed-9b54-025f9a3a09a6* <br/>
-    * *You can view access logs in this S3 bucket after stack creation.* 
+	* *S3 logging bucket and a respective logging bucket policy will be created for storing server access logs of above-created ALB S3 bucket. The name of S3 logging bucket will be automatically assigned by the CloudFormation.* <br/>
+	*Format: STACK_NAME-loggingbucket-RANDOM_ALPHANUMERIC_STRING* <br/>
+	*Example: nce-loggingbucket-1aln42m8gv711* <br/>
+    * *You can view logs in both these S3 buckets after stack creation.* <br/>
+	* *Post stack creation, for security reasons, it is recommended to enable bucket notifications manually for both the buckets created above by CloudFormation - [Ref](https://docs.aws.amazon.com/securityhub/latest/userguide/securityhub-standards-fsbp-controls.html#fsbp-s3-11).* <br/>
 * *If you select **False** in **Create Application Load Balancer?**, then following implementations are applicable.* <br/>
-  * *If you have selected **False** in **Create Application Load Balancer?** and **Existing ARN of target group for ALB** field is **Blank** - No ALB will be created.*
+  * *If you have selected **False** in **Create Application Load Balancer?** and **Existing ARN of target group for ALB** field is **Blank** - No ALB will be created.* <br/>
   * *If you have selected **False** in **Create Application Load Balancer?** and **Existing ARN of target group for ALB** field is **Provided** - Existing ALB will be Used.* <br/>
-    * *To find ARN of target group for ALB, please follow - [Finding ARN of target group for ALB](#finding-arn-of-target-group-for-alb).*
-    *  *In this case, it is recommended to enable access log and create S3 bucket and respective bucket policy to store logs of ALB.*
+    * *To find ARN of target group for ALB, please follow - [Finding ARN of target group for ALB](#finding-arn-of-target-group-for-alb).* <br/>
+    * *In this case, it is recommended to enable access logs and create S3 bucket and respective bucket policy to store logs of ALB. It is also recommended to enable the server access logs in a logging bucket and an associated logging bucket policy for the created ALB S3 bucket - [Ref](https://docs.aws.amazon.com/securityhub/latest/userguide/securityhub-standards-fsbp-controls.html#fsbp-s3-9). Post stack creation, for security reasons, it is also recommended to enable bucket notifications manually for both these buckets for security reasons - [Ref](https://docs.aws.amazon.com/securityhub/latest/userguide/securityhub-standards-fsbp-controls.html#fsbp-s3-11).*
 
 ![](./media/NETSKOPE-CE-Stack-ALB-Details.png)
 
