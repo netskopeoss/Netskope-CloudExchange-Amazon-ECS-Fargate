@@ -109,15 +109,18 @@ If you have your existing resources available, refer [ Customize Infrastructure 
 
 *Notes* <br/>
 *  *If you select **True** in **Create Application Load Balancer?**, then following implementations are applicable.* <br/>
-    * *Access logs for ALB will be enabled.* <br/>
-    * *S3 bucket and a respective bucket policy will be created for storing access logs of ALB. The name of ALB S3 bucket will be assigned as per the format given below.* <br/>
-    *Format: nce-REGION-STACK_ID* <br/>
-    *Example: nce-us-west-2-24c538a0-244d-11ed-9b54-025f9a3a09a6* <br/>
-	* *S3 logging bucket and a respective logging bucket policy will be created for storing server access logs of above-created ALB S3 bucket. The name of S3 logging bucket will be automatically assigned by the CloudFormation.* <br/>
-	*Format: STACK_NAME-loggingbucket-RANDOM_ALPHANUMERIC_STRING* <br/>
-	*Example: nce-loggingbucket-1aln42m8gv711* <br/>
+    * *Access logs for ALB will be enabled.*
+    * *S3 bucket and a respective bucket policy will be created for storing access logs of ALB. The name of S3 bucket will be assigned as per the format given below.* <br/>
+    *Format: netskope-ce-s3events-logs-STACK_ID* <br/>
+    *Example: netskope-ce-s3events-logs-24c538a0-244d-11ed-9b54-025f9a3a09a6* <br/>
+  	* *S3 logging bucket and a respective logging bucket policy will be created for storing server access logs of above-created ALB S3 bucket. The name of S3 logging bucket will be assigned as per the format given below.*
+    <br/>
+    *Format: netskope-ce-alb-logs-STACK_ID* <br/>
+    *Example: netskope-ce-alb-logs-24c538a0-244d-11ed-9b54-025f9a3a09a6* <br/>
     * *You can view logs in both these S3 buckets after stack creation.* <br/>
-	* *Post stack creation, for security reasons, it is recommended to enable bucket notifications manually for both the buckets created above by CloudFormation - [Ref](https://docs.aws.amazon.com/securityhub/latest/userguide/securityhub-standards-fsbp-controls.html#fsbp-s3-11).* <br/>
+	  * *Post stack creation, for security reasons, it is recommended to enable bucket notifications manually for both the buckets created above by CloudFormation - [Ref](https://docs.aws.amazon.com/securityhub/latest/userguide/securityhub-standards-fsbp-controls.html#fsbp-s3-11).* <br/>
+    * *HTTP listeners of Application Load Balancers aren't configured to redirect HTTP requests to HTTPS, based upon the best practices followed in organizations, HTTP listeners of ALB can be configured to redirect all HTTP requests to HTTPS.*
+    <br/>
 * *If you select **False** in **Create Application Load Balancer?**, then following implementations are applicable.* <br/>
   * *If you have selected **False** in **Create Application Load Balancer?** and **Existing ARN of target group for ALB** field is **Blank** - No ALB will be created.* <br/>
   * *If you have selected **False** in **Create Application Load Balancer?** and **Existing ARN of target group for ALB** field is **Provided** - Existing ALB will be Used.* <br/>
@@ -132,7 +135,8 @@ Enter the VPC name and CIDR Ranges for VPC, Private, and Public Subnets accordin
 
 *Notes* <br/>
 * *For security reasons, we have implemented in a way that,*
-  *  *The default Network ACL will allow ingress for all the traffic other than port 22 and 3389 from 0.0.0.0/0.*
+  * *The default Network ACL will allow ingress for all the traffic only for the port range of 1024-65535 from 0.0.0.0/0.*
+  * *The default Network ACL will allow ingress for port 443 from VPC CIDR only.*
   * *The VPC default security group will not allow any inbound and outbound traffic.*
 
 ![](./media/NETSKOPE-CE-Stack-NW-Details.png)
@@ -223,13 +227,16 @@ After the successful creation, you can see the list of resources by selecting th
 *  *If you select **True** in **Create Application Load Balancer?**, then following implementations are applicable.* <br/>
     * *Access logs for ALB will be enabled.* <br/>
     * *S3 bucket and a respective bucket policy will be created for storing access logs of ALB. The name of S3 bucket will be assigned as per the format given below.* <br/>
-    *Format: nce-REGION-STACK_ID* <br/>
-    *Example: nce-us-west-2-24c538a0-244d-11ed-9b54-025f9a3a09a6* <br/>
-	* *S3 logging bucket and a respective logging bucket policy will be created for storing server access logs of above-created ALB S3 bucket. The name of S3 logging bucket will be automatically assigned by the CloudFormation.* <br/>
-	*Format: STACK_NAME-loggingbucket-RANDOM_ALPHANUMERIC_STRING* <br/>
-	*Example: nce-loggingbucket-1aln42m8gv711* <br/>
+    *Format: netskope-ce-s3events-logs-STACK_ID* <br/>
+    *Example: netskope-ce-s3events-logs-24c538a0-244d-11ed-9b54-025f9a3a09a6* <br/>
+  	* *S3 logging bucket and a respective logging bucket policy will be created for storing server access logs of above-created ALB S3 bucket. The name of S3 logging bucket will be assigned as per the format given below.*
+    <br/>
+    *Format: netskope-ce-alb-logs-STACK_ID* <br/>
+    *Example: netskope-ce-alb-logs-24c538a0-244d-11ed-9b54-025f9a3a09a6* <br/>
     * *You can view logs in both these S3 buckets after stack creation.* <br/>
-	* *Post stack creation, for security reasons, it is recommended to enable bucket notifications manually for both the buckets created above by CloudFormation - [Ref](https://docs.aws.amazon.com/securityhub/latest/userguide/securityhub-standards-fsbp-controls.html#fsbp-s3-11).* <br/>
+	  * *Post stack creation, for security reasons, it is recommended to enable bucket notifications manually for both the buckets created above by CloudFormation - [Ref](https://docs.aws.amazon.com/securityhub/latest/userguide/securityhub-standards-fsbp-controls.html#fsbp-s3-11).* <br/>
+    * *HTTP listeners of Application Load Balancers aren't configured to redirect HTTP requests to HTTPS, based upon the best practices followed in organizations, HTTP listeners of ALB can be configured to redirect all HTTP requests to HTTPS.*
+    <br/>
 * *If you select **False** in **Create Application Load Balancer?**, then following implementations are applicable.* <br/>
   * *If you have selected **False** in **Create Application Load Balancer?** and **Existing ARN of target group for ALB** field is **Blank** - No ALB will be created.* <br/>
   * *If you have selected **False** in **Create Application Load Balancer?** and **Existing ARN of target group for ALB** field is **Provided** - Existing ALB will be Used.* <br/>
@@ -377,21 +384,21 @@ Go to ECS Console, select **Clusters** and relevant Cluster. The Cluster details
 
 ![](./media/NETSKOPE-CE-BH-SSH.png)
 
-6. Go to EC2 Console, Select **Security Groups** and relevant security group. Click on **Edit inbound rules** and allow 8000 port.
+7. Go to EC2 Console, Select **Security Groups** and relevant security group. Click on **Edit inbound rules** and allow 8000 port.
 
 ![](./media/NETSKOPE-CE-BH-SG.png)
 
-7. Go to VPC Console, Select **Network ACLs** and relevant Network ACL. Select the **Inbound rules** tab. Click on **Edit inbound rules** and add new rule for SSH from user's local machine.<br/>
+8. Go to VPC Console, Select **Network ACLs** and relevant Network ACL. Select the **Inbound rules** tab. Click on **Edit inbound rules** and add new rule for SSH from user's local machine and another rule for HTTP.<br/>
 *Note - Add your local machine IP Address in source tab.*
 
 ![](./media/NETSKOPE-CE-AA-NACL.png)
 
-8. Go to EC2 Console, Select **Load Balancers** and relevant ALB. The ALB details page for the selected ALB opens the information including the DNS Name of ALB. Copy the DNS Name of ALB to the clipboard.
+9. Go to EC2 Console, Select **Load Balancers** and relevant ALB. The ALB details page for the selected ALB opens the information including the DNS Name of ALB. Copy the DNS Name of ALB to the clipboard.
 
 ![](./media/NETSKOPE-CE-ALB-Details.png)
 
 
-9. Open Git Bash or terminal of end user's local system and paste the following command that initiates the port forwarding from the local system to AWS EC2 Instance.<br/>
+10. Open Git Bash or terminal of end user's local system and paste the following command that initiates the port forwarding from the local system to AWS EC2 Instance.<br/>
 *Note - If ALB was not used in deployment, go to 9.2 Applocation Load Balancer is not present.*
 
    **9.1 Application Load Balancer is present** <br/>
@@ -406,7 +413,7 @@ Go to ECS Console, select **Clusters** and relevant Cluster. The Cluster details
   ![](./media/NETSKOPE-CE-Port-Forward-without-ALB.png)
 
 
-10. Type *localhost:8000* in browser and access the application.
+11. Type *localhost:8000* in browser and access the application.
 
 ![](./media/NETSKOPE-CE-App-Localhost-Login.png)
 

@@ -467,6 +467,37 @@ Resources:
       RouteTableId: !Ref PrivateRouteTable2
       SubnetId: !Ref PrivateSubnet2
 
+  EC2EndpointSecurityGroup:
+      Type: AWS::EC2::SecurityGroup
+      Condition: CreateNewResources
+      DependsOn: PrivateSubnet2RouteTableAssociation
+      Properties:
+        VpcId: !Ref VPC
+        GroupName: !Sub "${AWS::StackName}-EC2-PrivateEndpoint-SG"
+        GroupDescription: Used by Netskope CE EC2 Endpoint
+        SecurityGroupIngress:
+          - IpProtocol: tcp
+            FromPort: 0
+            ToPort: 65535
+            CidrIp: !Ref VpcCIDR
+        SecurityGroupEgress:
+          - IpProtocol: "-1"
+            CidrIp: 0.0.0.0/0
+
+  EC2PrivateInterfaceEndpoint:
+    Type: 'AWS::EC2::VPCEndpoint'
+    Condition: CreateNewResources
+    DependsOn: PrivateSubnet2RouteTableAssociation
+    Properties:
+      VpcEndpointType: Interface
+      ServiceName: !Sub 'com.amazonaws.${AWS::Region}.ec2'
+      VpcId: !Ref VPC
+      SubnetIds: 
+        - !Ref PrivateSubnet1
+        - !Ref PrivateSubnet2
+      SecurityGroupIds:
+        - !Ref EC2EndpointSecurityGroup
+
   NetskopeCloudExchangeTaskExecutionRole:
     Type: "AWS::IAM::Role"
     Properties:
@@ -945,8 +976,7 @@ Resources:
     Properties:
       BucketName: !Join
                   - "-"
-                  - - "nce"
-                    - !Ref 'AWS::Region'
+                  - - "netskope-ce-alb-logs"
                     - !Select
                       - 2
                       - !Split
@@ -983,6 +1013,14 @@ Resources:
     Condition: CreateALB
     DeletionPolicy: Retain
     Properties:
+      BucketName: !Join
+                  - "-"
+                  - - "netskope-ce-s3events-logs-"
+                    - !Select
+                      - 2
+                      - !Split
+                        - "/"
+                        - !Ref "AWS::StackId"
       AccessControl: LogDeliveryWrite
       PublicAccessBlockConfiguration:
         BlockPublicAcls: TRUE
@@ -1226,34 +1264,113 @@ Resources:
       Principal: events.amazonaws.com
       SourceArn: !Sub 'arn:aws:events:${AWS::Region}:${AWS::AccountId}:rule/RevokeDefaultVPCSGRuleInvoke_${EnvName}'
 
+  RevokeDefaultVPCNACLRule:
+    Type: AWS::Lambda::Function
+    Condition: CreateNewResources
+    DependsOn: VPC
+    Properties:
+      FunctionName: !Sub RevokeDefaultVPCNACLRule_${EnvName}
+      Role: !GetAtt LambdaRole.Arn
+      Runtime: python3.7
+      Handler: index.lambda_handler
+      MemorySize: 128
+      Timeout: 60
+      Code:
+        ZipFile: |
+          import os
+          import boto3
+          import json
+          import logging
+          logger = logging.getLogger()
+          def lambda_handler(event, context):
+              try:
+                  is_entries_removed = False
+                  ec2 = boto3.resource('ec2')
+                  nacl_id = os.getenv('naclid', '')
+                  network_acl = ec2.NetworkAcl(nacl_id)
 
-  DefaultNACLInboundRule3389:
+                  for entry in network_acl.entries:
+                      if entry.get('CidrBlock') == '0.0.0.0/0' and entry.get('Egress') is False and \
+                              entry.get('RuleAction') == 'allow' and entry.get('Protocol') == '-1':
+                          network_acl.delete_entry(Egress=False, RuleNumber=entry.get('RuleNumber'))
+                          logger.info(f'Rule entry {entry} removed from network ACL')
+                          is_entries_removed = True
+                  if not is_entries_removed:
+                      return {
+                        'statusCode': 200,
+                        'body': json.dumps('No rule entries present in Network NACL ' +  nacl_id + ' which satisfies the rule condition.')
+                      }
+                      
+                  return {
+                    'statusCode': 200,
+                    'body': json.dumps('Inbound rules removed for default NACL ' + nacl_id + 'of VPC.')
+                  }
+              except Exception as e:
+                  logger.error('Error while removing the ingress rules from the default NACL ' + nacl_id + 'of VPC.')
+                  raise(e)    
+      Environment:
+        Variables:
+          naclid: !GetAtt VPC.DefaultNetworkAcl
+
+  RevokeDefaultVPCNACLRuleInvoke:
+    Type: AWS::Events::Rule
+    DependsOn: RevokeDefaultVPCNACLRule
+    Condition: CreateNewResources
+    Properties:
+      Name: !Sub RevokeDefaultVPCNACLRuleInvoke_${EnvName}
+      Description: "Test"
+      EventPattern:
+        source:
+          - "aws.cloudformation"
+        detail-type:
+          - "CloudFormation Stack Status Change"
+        detail: 
+          stack-id: [!Sub '${AWS::StackId}']
+          status-details:
+            status: ['CREATE_COMPLETE']
+      State: "ENABLED"
+      Targets:
+        - Arn: !GetAtt RevokeDefaultVPCNACLRule.Arn
+          Id:  !Sub RevokeDefaultVPCNACLRuleInvoke_${EnvName}
+          
+  PermissionToInvokeDefaultVPCACLRule:
+    Type: AWS::Lambda::Permission
+    DependsOn: RevokeDefaultVPCNACLRule
+    Condition: CreateNewResources
+    Properties:
+      FunctionName:
+        Ref: "RevokeDefaultVPCNACLRule"
+      Action: "lambda:InvokeFunction"
+      Principal: events.amazonaws.com
+      SourceArn: !Sub 'arn:aws:events:${AWS::Region}:${AWS::AccountId}:rule/RevokeDefaultVPCNACLRuleInvoke_${EnvName}'
+
+  DefaultNACLInboundRule110:
     Type: AWS::EC2::NetworkAclEntry
     DependsOn: VPC
     Condition: CreateNewResources
     Properties:
        NetworkAclId: !GetAtt VPC.DefaultNetworkAcl
-       RuleNumber: 98
+       RuleNumber: 110
        Protocol: 6
-       RuleAction: deny
-       CidrBlock: 0.0.0.0/0
+       RuleAction: Allow
+       CidrBlock: !Ref VpcCIDR
        PortRange:
-         From: 3389
-         To: 3389
+         From: 443
+         To: 443
 
-  DefaultNACLInboundRule22:
+  DefaultNACLInboundRule105:
     Type: AWS::EC2::NetworkAclEntry
     DependsOn: VPC
     Condition: CreateNewResources
     Properties:
        NetworkAclId: !GetAtt VPC.DefaultNetworkAcl
-       RuleNumber: 99
+       RuleNumber: 105
        Protocol: 6
-       RuleAction: deny
+       RuleAction: Allow
        CidrBlock: 0.0.0.0/0
        PortRange:
-         From: 22
-         To: 22
+         From: 1024 
+         To: 65535
          
   ECSClusterServiceWithALB:
     Type: AWS::ECS::Service
