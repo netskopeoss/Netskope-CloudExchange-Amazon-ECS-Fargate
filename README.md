@@ -69,6 +69,21 @@ The following prerequisites are required to implement the Netskope Cloud Exchang
 &emsp;&emsp; - [Amazon VPC](https://aws.amazon.com/vpc/) <br />
 &emsp;&emsp; - [Amazon CloudWatch](https://aws.amazon.com/cloudwatch/) <br />
 
+
+- AWS user account deploying this Netskope CloudExchange application requires necessary permission to the below set of AWS services to deploy Netskope CloudExchange CloudFormation Template **(CloudExchangeTemplate.yaml)**. Please make sure that the permission is in accordance with that.
+<br/>
+&emsp;&emsp; - AmazonEC2 <br/>
+&emsp;&emsp; - AWSCloudFormation <br/>
+&emsp;&emsp; - AmazonElasticFileSystem <br/>
+&emsp;&emsp; - AmazonECS <br/>
+&emsp;&emsp; - AmazonVPC <br/>
+&emsp;&emsp; - IAM <br/>
+&emsp;&emsp; - AWSLambda <br/>
+&emsp;&emsp; - AmazonS3 <br/>
+&emsp;&emsp; - AmazonSNS <br/>
+&emsp;&emsp; - AmazonEventBridge <br/>
+&emsp;&emsp; - CloudWatchLogs <br/>
+
 ## Deployment & Configuration Steps
 
 Using the CloudFormation template you can deploy the Netskope Cloud Exchange in two ways. Before going through the actual stack deployment process, it is highly recommended for the user to visit the [Best Practices](#best-practices-dos-and-donts) section.
@@ -111,14 +126,14 @@ If you have your existing resources available, refer [ Customize Infrastructure 
 *  *If you select **True** in **Create Application Load Balancer?**, then following implementations are applicable.* <br/>
     * *Access logs for ALB will be enabled.*
     * *S3 bucket and a respective bucket policy will be created for storing access logs of ALB. The name of S3 bucket will be assigned as per the format given below.* <br/>
-    *Format: netskope-ce-s3events-logs-STACK_ID* <br/>
-    *Example: netskope-ce-s3events-logs-24c538a0-244d-11ed-9b54-025f9a3a09a6* <br/>
+      * *Format: netskope-ce-s3events-logs-STACK_ID* <br/>
+      * *Example: netskope-ce-s3events-logs-24c538a0-244d-11ed-9b54-025f9a3a09a6* <br/>
   	* *S3 logging bucket and a respective logging bucket policy will be created for storing server access logs of above-created ALB S3 bucket. The name of S3 logging bucket will be assigned as per the format given below.*
     <br/>
-    *Format: netskope-ce-alb-logs-STACK_ID* <br/>
-    *Example: netskope-ce-alb-logs-24c538a0-244d-11ed-9b54-025f9a3a09a6* <br/>
+      * *Format: netskope-ce-alb-logs-STACK_ID* <br/>
+      * *Example: netskope-ce-alb-logs-24c538a0-244d-11ed-9b54-025f9a3a09a6* <br/>
     * *You can view logs in both these S3 buckets after stack creation.* <br/>
-	  * *Post stack creation, for security reasons, it is recommended to enable bucket notifications manually for both the buckets created above by CloudFormation - [Ref](https://docs.aws.amazon.com/securityhub/latest/userguide/securityhub-standards-fsbp-controls.html#fsbp-s3-11).* <br/>
+    * *Post stack creation, for security reasons, it is recommended to enable bucket notifications manually for both the buckets created above by CloudFormation - [Ref](https://docs.aws.amazon.com/securityhub/latest/userguide/securityhub-standards-fsbp-controls.html#fsbp-s3-11).* <br/>
     * *HTTP listeners of Application Load Balancers aren't configured to redirect HTTP requests to HTTPS, based upon the best practices followed in organizations, HTTP listeners of ALB can be configured to redirect all HTTP requests to HTTPS.*
     <br/>
 * *If you select **False** in **Create Application Load Balancer?**, then following implementations are applicable.* <br/>
@@ -227,14 +242,14 @@ After the successful creation, you can see the list of resources by selecting th
 *  *If you select **True** in **Create Application Load Balancer?**, then following implementations are applicable.* <br/>
     * *Access logs for ALB will be enabled.* <br/>
     * *S3 bucket and a respective bucket policy will be created for storing access logs of ALB. The name of S3 bucket will be assigned as per the format given below.* <br/>
-    *Format: netskope-ce-s3events-logs-STACK_ID* <br/>
-    *Example: netskope-ce-s3events-logs-24c538a0-244d-11ed-9b54-025f9a3a09a6* <br/>
+      * *Format: netskope-ce-s3events-logs-STACK_ID* <br/>
+      * *Example: netskope-ce-s3events-logs-24c538a0-244d-11ed-9b54-025f9a3a09a6* <br/>
   	* *S3 logging bucket and a respective logging bucket policy will be created for storing server access logs of above-created ALB S3 bucket. The name of S3 logging bucket will be assigned as per the format given below.*
     <br/>
-    *Format: netskope-ce-alb-logs-STACK_ID* <br/>
-    *Example: netskope-ce-alb-logs-24c538a0-244d-11ed-9b54-025f9a3a09a6* <br/>
+      * *Format: netskope-ce-alb-logs-STACK_ID* <br/>
+      * *Example: netskope-ce-alb-logs-24c538a0-244d-11ed-9b54-025f9a3a09a6* <br/>
     * *You can view logs in both these S3 buckets after stack creation.* <br/>
-	  * *Post stack creation, for security reasons, it is recommended to enable bucket notifications manually for both the buckets created above by CloudFormation - [Ref](https://docs.aws.amazon.com/securityhub/latest/userguide/securityhub-standards-fsbp-controls.html#fsbp-s3-11).* <br/>
+    * *Post stack creation, for security reasons, it is recommended to enable bucket notifications manually for both the buckets created above by CloudFormation - [Ref](https://docs.aws.amazon.com/securityhub/latest/userguide/securityhub-standards-fsbp-controls.html#fsbp-s3-11).* <br/>
     * *HTTP listeners of Application Load Balancers aren't configured to redirect HTTP requests to HTTPS, based upon the best practices followed in organizations, HTTP listeners of ALB can be configured to redirect all HTTP requests to HTTPS.*
     <br/>
 * *If you select **False** in **Create Application Load Balancer?**, then following implementations are applicable.* <br/>
@@ -384,12 +399,13 @@ Go to ECS Console, select **Clusters** and relevant Cluster. The Cluster details
 
 ![](./media/NETSKOPE-CE-BH-SSH.png)
 
-7. Go to EC2 Console, Select **Security Groups** and relevant security group. Click on **Edit inbound rules** and allow 8000 port.
+7. Go to EC2 Console, Select **Security Groups** and relevant security group. Click on **Edit inbound rules** and allow 22 port for user specific IP address.
 
 ![](./media/NETSKOPE-CE-BH-SG.png)
 
-8. Go to VPC Console, Select **Network ACLs** and relevant Network ACL. Select the **Inbound rules** tab. Click on **Edit inbound rules** and add new rule for SSH from user's local machine and another rule for HTTP.<br/>
-*Note - Add your local machine IP Address in source tab.*
+8. Go to VPC Console, Select **Network ACLs** and relevant Network ACL. Select the **Inbound rules** tab. Click on **Edit inbound rules** and add the following rules.
+* Add HTTP rule with VPC CIDR range as source.
+* Add SSH rule with user's local machine IP address as source. 
 
 ![](./media/NETSKOPE-CE-AA-NACL.png)
 

@@ -543,6 +543,45 @@ Resources:
                   - "ecr:BatchGetImage"
                 Resource: "*"
 
+  VPCFlowLogRole:
+    Type: "AWS::IAM::Role"
+    Condition: CreateNewResources
+    Properties:
+      RoleName: !Sub "NetskopeCloudExchangeFlowLogRole-${AWS::StackName}"
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - "sts:AssumeRole"
+            Effect: Allow
+            Principal:
+              Service:
+                - vpc-flow-logs.amazonaws.com
+      Path: /
+      Policies:
+        - PolicyName: !Sub "NetskopeCloudExchangeFlowLogPolicy-${AWS::StackName}"
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "logs:CreateLogStream"
+                  - "logs:DescribeLogGroups"
+                  - "logs:DescribeLogStreams"
+                  - "logs:CreateLogGroup"
+                  - "logs:PutLogEvents"
+                Resource: "*"
+
+  VPCFlowLog:
+    Type: AWS::EC2::FlowLog
+    Condition: CreateNewResources
+    Properties:
+      DeliverLogsPermissionArn: !GetAtt VPCFlowLogRole.Arn
+      LogGroupName: !Sub "Netskope-CE-VPC-FlowLogsGroup-${AWS::StackName}"
+      ResourceId: !Ref VPC
+      ResourceType: VPC
+      TrafficType: REJECT
+      LogDestinationType: cloud-watch-logs
+
   TaskSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
