@@ -442,6 +442,42 @@ After selecting the relevent task, it opens the information including the privat
 
 ![](./media/NETSKOPE-CE-BH-Task-Private-IP.png)
 
+## Security Competency Aspects
+<div style="text-align: justify">
+
+1. Application Health Monitoring</br>
+Post the successful CloudFormation stack creation, please follow the steps here for [accessing Netskope Cloud Exchange](#accessing-netskope-ce) and then, follow the below steps for monitoring the overall application health.</br>
+    * Please open the login page for Netskope Cloud Exchange in the browser.
+    * One can check whether or not all of the services are up by hovering over the information **"i"**  button on the top-right corner of the login page. It will display the health status of all the Cloud Exchange containers as seen in the screenshot below.</br>
+    ![](./media/NETSKOPE-CE-SCA-AHM1.png)
+    * Please login to the Netskope Cloud Exchange.
+    * The **System Status** dashboard on the **System Status** tab opens by default as the **Home** page after first logging into the Cloud Exchange. This page will show an overall health status of the Netskope Cloud Exchange deployment as seen in the screenshot below.</br>
+    ![](./media/NETSKOPE-CE-SCA-AHM2.png)
+    * Examining the **Logging** page in the left-side pane will allow the end user to determine whether the application features are high-level functioning effectively or not.</br>
+    ![](./media/NETSKOPE-CE-SCA-AHM3.png)
+    * The application's status can further be checked using the **Syslog for CE** plugin. The CE logs are forwarded using this plugin into the SIEM platform. It is possible to set up the SIEM mapping between the Syslog service plugin and the SIEM Platform and to keep track of the logs as they are sent to the SIEM. If the SIEM's log delivery stops, the end user will be able to suspect something going wrong with the Netskope Cloud Exchange application.</br>
+    ![](./media/NETSKOPE-CE-SCA-AHM4.png)
+
+2. Sensitive Data Storage Information</br>
+Below is the primary confidential information for Netskope Cloud Exchange.
+    * **JWT Secret & Maintenance Password** - These are user-configurable at the time of running AWS CloudFormation template. These are masked on the AWS Stack UI. These are stored in the environment variables of the CE container images deployed on AWS ECS Fargate. </br>
+    * **Configuration Passwords & Secret Keys & Access Keys** - These are stored in the data of the AWS ECS Fargate managed **MongoDB** container itself.
+
+3. Sensitive Data Rotation Information</br>
+The end users can change the password of Netskope Cloud Exchange through the UI.
+    * Click on the **Account** link in the left-navigation pane. It will open a pop-up for Account information.
+    * Click on the **Change Password** button and follow the process to change the password as shown in the below screenshots.</br>
+    ![](./media/NETSKOPE-CE-SCA-SDR1.png)
+    ![](./media/NETSKOPE-CE-SCA-SDR2.png)
+    * It is recommended not to change any other secret tokens like JWT Secret, Maintenance Password, etc.
+
+4. Application Data Backup & Recovery
+    * In this solution, EFS filesystem is used for mounting the data paths to the respective CE containers deployed on AWS managed ECS Fargate. It is recommended that the end user follows standard EFS backup and restore processes (Note - The important application data is related to the MongoDB container and the respective EFS Access Point is /data/mongo-data). The end user can alternatively get [CLI access to the MongoDB container](https://aws.amazon.com/blogs/containers/new-using-amazon-ecs-exec-access-your-containers-fargate-ec2/) deployed on AWS ECS Fargate and follow the usual backup & restore processes for the container path /bitnami/mongodb.
+
+
+</div>
+
+
 ## Best Practices (Dos and Don'ts)
 *Note - These steps are optional but recommended to be followed manually before or after the creation of the stack depending upon the step.* <br/>
 <div style="text-align: justify">
