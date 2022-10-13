@@ -62,27 +62,55 @@ For example, the solution deploys 4 container instances on your Amazon ECS clust
 ## Prerequisites 
 The following prerequisites are required to implement the Netskope Cloud Exchange on AWS Fargate for Amazon ECS.
 
-- This solution guide assumes working knowledge of the AWS management console. We also recommend that you become familiar with the following AWS services. <br/>
-&emsp;&emsp; - [AWS CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/GettingStarted.html) <br />
-&emsp;&emsp; - [Amazon ECS](https://aws.amazon.com/ecs/) <br />
-&emsp;&emsp; - [AWS Fargate](https://aws.amazon.com/fargate/) <br />
-&emsp;&emsp; - [Amazon VPC](https://aws.amazon.com/vpc/) <br />
-&emsp;&emsp; - [Amazon CloudWatch](https://aws.amazon.com/cloudwatch/) <br />
-
-
-- AWS user account deploying this Netskope CloudExchange application requires necessary permission to the below set of AWS services to deploy Netskope CloudExchange CloudFormation Template **(CloudExchangeTemplate.yaml)**. Please make sure that the permission is in accordance with that.
+1. This solution guide assumes working knowledge of the AWS management console. We also recommend that you become familiar with the following AWS services.
+    * [AWS CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/GettingStarted.html) <br/>
+    * [Amazon ECS](https://aws.amazon.com/ecs/) <br/>
+    * [AWS Fargate](https://aws.amazon.com/fargate/) <br/>
+    * [Amazon VPC](https://aws.amazon.com/vpc/) <br/>
+    * [Amazon CloudWatch](https://aws.amazon.com/cloudwatch/) <br/>
 <br/>
-&emsp;&emsp; - AmazonEC2 <br/>
-&emsp;&emsp; - AWSCloudFormation <br/>
-&emsp;&emsp; - AmazonElasticFileSystem <br/>
-&emsp;&emsp; - AmazonECS <br/>
-&emsp;&emsp; - AmazonVPC <br/>
-&emsp;&emsp; - IAM <br/>
-&emsp;&emsp; - AWSLambda <br/>
-&emsp;&emsp; - AmazonS3 <br/>
-&emsp;&emsp; - AmazonSNS <br/>
-&emsp;&emsp; - AmazonEventBridge <br/>
-&emsp;&emsp; - CloudWatchLogs <br/>
+
+2. Subscription to marketplace solution ([AWS MarketPlace](https://aws.amazon.com/marketplace/pp/prodview-swtuwsyshtqj2)) in the same AWS account is needed (refer to point 5 of Basic Troubleshooting section below for more details).
+
+3. There are below 2 ways of executing the current AWS CloudFormation template. For both the below ways, the required permissions are mentioned in the next point.
+    * Using an AWS User account with all necessary permissions<br/>
+    * Using an AWS IAM role with all necessary permissions<br/>
+<br/>
+
+4. AWS user account or AWS IAM role deploying this Netskope CloudExchange application requires in general, permissions to the below set of AWS services to deploy Netskope CloudExchange CloudFormation Template **(CloudExchangeTemplate.yaml)**. Please make sure that the permissions are in accordance with that.
+
+    * AmazonEC2 <br/>
+    * AWSCloudFormation <br/>
+    * AmazonElasticFileSystem <br/>
+    * AmazonECS <br/>
+    * AmazonVPC <br/>
+    * AWSLambda <br/>
+    * AmazonS3 <br/>
+    * AmazonSNS <br/>
+    * AmazonEventBridge <br/>
+    * CloudWatchLogs <br/>
+    * IAM (optional; for why it is optional, please check point 5 below) <br/>
+    <br/>
+
+    We have also provided a set of policy JSON files in this [folder](/policy%20files/) which mention all the detailed AWS resource-specific permissions that are required for the AWS user account or AWS IAM role deploying this Netskope CloudExchange application. If the end user is deploying the stack using AWS user account, please ensure that the user account has these permissions while if the end user is deploying the stack using AWS IAM role, then, follow the below steps to create an AWS IAM role with all these required permissions.<br/>
+    * Browse to the IAM console. <br/>
+    * In the navigation pane of the IAM console, choose Policies, and then choose Create policy. <br/>
+    * Go to JSON tab, and copy the content of [Netskope policy file](/policy%20files/NetskopeCE_policy_1.json). <br/>
+    * Choose NEXT:Tags. <br/>
+    * Choose NEXT:Review. <br/>
+    * Enter Name and choose Create policy. <br/>
+    * Repeat above steps for all the policy files within the  [Policy folder](/policy%20files/).
+    * In the navigation pane of the IAM console, choose Roles, and then choose Create role. <br/>
+    * Choose the AWS service role type. <br/>
+    * Choose the CloudFormation use case for service. <br/>
+    * Choose Next. <br/>
+    * Select the policy created above to use for the permissions policy. <br/>
+    * Choose Next. <br/>
+    * Enter Role name and description for the role. <br/>
+    * Review the role, and then choose Create role. <br/>
+    <br/>
+
+5. If out of security constraints on the customer's end, one can't allow the AWS IAM role's create/modify/delete permissions to the AWS user account or the AWS IAM role through which they are executing this CloudFormation template, we have given a provision of using pre-created AWS IAM roles on the customer's end (refer to 1.2.8 and 2.2.8 sections below for more details) for the respective purposes of this automation (e.g. for ECS Task creation & execution, for read/modify VPC default Security Groups & NACL for ensuring security best practices) rather than the automation itself creating those IAM roles. Ignore this feature if they can provide AWS IAM permissions to the execution AWS user account or AWS IAM role and then, the automation itself will take care of creating the requisite IAM roles for aforementioned purposes.
 
 ## Deployment & Configuration Steps
 
@@ -108,7 +136,7 @@ If you have your existing resources available, refer [ Customize Infrastructure 
 
 ![](./media/NETSKOPE-CE-CFT-MGMT-Console.png)
 
-1.2.4 Choose **Upload a template file** then click on **Choose file**. Choose the [CloudExchangeTemplate.yaml](https://github.com/netskopeoss/Netskope-CloudExchange-Amazon-ECS-Fargate/blob/main/CloudExchangeTemplate.yaml)  from the directory on your disk where you downloaded it, click **Open**, and then click **Next**.<br />
+1.2.4 Choose **Upload a template file** then click on **Choose file**. Choose the [CloudExchangeTemplate.yaml](https://github.com/netskopeoss/Netskope-CloudExchange-Amazon-ECS-Fargate/blob/main/CloudExchangeTemplate.yaml)  from the directory on your disk where you downloaded it, click **Open**, and then click **Next**.<br/>
 
 ![](./media/NETSKOPE-CE-Stack-Upload-Template.png)
 
@@ -116,7 +144,7 @@ If you have your existing resources available, refer [ Customize Infrastructure 
 
 ![](./media/NETSKOPE-CE-Stack-Name.png)
 
-1.2.6 In the Parameters section select **True** in **Create new resources?** and provide an appropriate value for **Environment name**.<br />
+1.2.6 In the Parameters section select **True** in **Create new resources?** and provide an appropriate value for **Environment name**.<br/>
 
 ![](./media/NETSKOPE-CE-Stack-Create-Resources-True.png)
 
@@ -144,19 +172,120 @@ If you have your existing resources available, refer [ Customize Infrastructure 
 
 ![](./media/NETSKOPE-CE-Stack-ALB-Details.png)
 
-1.2.8 Skip the **Existing resource details(applicable if 'Create new resources?' is 'False')** section and navigate to the **Network details (applicable if 'Create new resources?' is 'True').**
+1.2.8 Provide the **Existing IAM role for ECS Task creation & execution** and **Existing IAM role for read/modify EC2 Security Groups & NACL** in **Existing IAM role details** section.<br/>
+
+*Note - This automation solution requires specific AWS IAM roles for ECS Task creation & execution and read/modify VPC default Security Groups & NACL for security best practices. Many times, the end users out of security constraints on their end can't allow the AWS IAM role's create/modify/delete permissions to the AWS user account or the AWS IAM role through which they are executing this automation. For such cases, we have given this provision of using pre-created AWS IAM roles on the customer's end for the respective purposes of this automation rather than the automation itself creating those IAM roles.*
+
+![](./media/NETSKOPE-CE-Stack-IAM-Role-Details.png)
+
+* **Creating the ECS Task creation and execution IAM role** </br>
+  * Open the IAM console at https://console.aws.amazon.com/iam/.
+  * In the navigation pane, choose Roles, Create role.
+  * For Use case, choose Elastic Container Service Task, then choose Next.
+  * In the Attach permissions policy section, do the following:
+    * Search for AmazonECSTaskExecutionRolePolicy, then select the policy.
+    * Under Set permissions boundary - optional, choose Create role without a permissions boundary.
+    * Choose Next.
+  * Under Role details, do the following:
+    * For Role name, type Rolename of your choice.
+    * For Add tags (optional), specify any custom tags to associate with the policy.
+  * Choose Create role.
+</br></br>
+* **Create ECS Task role and Task execution policy** </br>
+  * Amazon ECS provides the managed policy named AmazonECSTaskExecutionRolePolicy which contains the permissions for the common use cases. User need to add additional inline policies to task execution role.
+
+    ```json
+    {
+      "Version": "2012-10-17",
+      "Statement": [
+      {
+        "Effect": "Allow",
+        "Action": [
+          "ecr:GetAuthorizationToken",
+          "ecr:BatchCheckLayerAvailability",
+          "ecr:GetDownloadUrlForLayer",
+          "ecr:BatchGetImage",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+          "elasticfilesystem:ClientMount",
+          "elasticfilesystem:ClientWrite",
+        ],
+        "Resource": "*"
+      }
+     ]
+    }
+    ```
+
+* **Create IAM role for read/modify Security Groups & NACL**
+
+  * Open the IAM console at https://console.aws.amazon.com/iam/.
+  * In the navigation pane, choose Roles, Create role.
+  * Under Use case, choose Lambda.
+  * Choose Next.
+  * Select the AWS managed policies AWSLambdaBasicExecutionRole.
+  * Choose Next.
+  * Enter a Role name and then choose Create role.
+  * Select the name of the role and in the **Trusted relationships** section, click on **Edit trust policy**.
+    * Add **"ssm.amazonaws.com"** to the Service list as shown below:
+
+    ```json
+    {
+      "Version": "2012-10-17",
+      "Statement": [
+      {
+            "Effect": "Allow",
+            "Principal": {
+                "Service": [
+                    "ssm.amazonaws.com",
+                    "lambda.amazonaws.com"
+                ]
+            },
+            "Action": "sts:AssumeRole"
+        }
+      ]
+    }
+    ```
+
+* **Create policy to attach IAM role for read/modify Security Groups & NACL** </br>
+  * User need to add additional inline policies to the role.
+
+  ```Json
+  {
+    "Statement": [
+        {
+            "Action": [
+                "ec2:DescribeSecurityGroupReferences",
+                "ec2:DescribeSecurityGroups",
+                "ec2:UpdateSecurityGroupRuleDescriptionsEgress",
+                "ec2:UpdateSecurityGroupRuleDescriptionsIngress",
+                "ec2:RevokeSecurityGroupIngress",
+                "ec2:RevokeSecurityGroupEgress",
+                "ec2:DescribeNetworkAcls",
+                "ec2:DeleteNetworkAclEntry"
+            ],
+            "Resource": "*",
+            "Effect": "Allow"
+        }
+    ]
+  }
+  ```
+
+<br/>
+
+1.2.9 Skip the **Existing resource details(applicable if 'Create new resources?' is 'False')** section and navigate to the **Network details (applicable if 'Create new resources?' is 'True').**
 
 Enter the VPC name and CIDR Ranges for VPC, Private, and Public Subnets according to your network requirements, or leave the default details as it is.
 
 *Notes* <br/>
 * *For security reasons, we have implemented in a way that,*
+  * *It is recommended to enable VPC Flow Logs; to enable it using CloudFormation stack, select 'Enable VPC Flow Logs' field to 'True'. AWS IAM access is required for the AWS user account or AWS IAM role deploying the CloudFormation stack to enable VPC Flow Logs; if the AWS user account or AWS IAM role doesn't have required AWS IAM access while deploying then select 'Enable VPC Flow Logs' field to 'False' (it is recommended to enable it manually after the stack is deployed (refer [this](https://docs.aws.amazon.com/vpc/latest/userguide/flow-logs-cwl.html#flow-logs-cwl-create-flow-log))).*
   * *The default Network ACL will allow ingress for all the traffic only for the port range of 1024-65535 from 0.0.0.0/0.*
   * *The default Network ACL will allow ingress for port 443 from VPC CIDR only.*
   * *The VPC default security group will not allow any inbound and outbound traffic.*
 
 ![](./media/NETSKOPE-CE-Stack-NW-Details.png)
 
-1.2.9 Enter the Environment variables required for Netskope CE Deployment and click on **Next**. <br/><br/>
+1.2.10 Enter the Environment variables required for Netskope CE Deployment and click on **Next**. <br/><br/>
 **Environment variables** <br/>
 * JWT secrets: A random secure string that will be used for signing the authentication tokens.
 * Maintainance password: A maintenance password that will be used for RabbitMQ and MongoDB services (This password can be set only once).
@@ -168,30 +297,30 @@ Enter the VPC name and CIDR Ranges for VPC, Private, and Public Subnets accordin
 
 ![](./media/NETSKOPE-CE-ENV-VARS.png)
 
-1.2.10 In the **Configure stack options** section , specify tags (key-value pairs) to apply to resources in your stack. You can add up to 50 unique tags for each stack.
+1.2.11 In the **Configure stack options** section , specify tags (key-value pairs) to apply to resources in your stack. You can add up to 50 unique tags for each stack.
 
 ![](./media/NETSKOPE-CE-Stack-Tags.png)
 
-1.2.11 In the **Permissions** section , choose an IAM role to explicitly define how CloudFormation can create, modify, or delete resources in the stack. If you don't choose a role, CloudFormation uses permissions based on your user credentials.
+1.2.12 In the **Permissions** section , choose an IAM role to explicitly define how CloudFormation can create, modify, or delete resources in the stack. If you don't choose a role, CloudFormation uses permissions based on your user credentials.
 
 ![](./media/NETSKOPE-CE-Stack-Permissions.png)
 
-1.2.12 Expand the **Notification options** in **Advanced Options**, select the specific SNS topic ARN from the dropdown and click on **Next**. <br/>
+1.2.13 Expand the **Notification options** in **Advanced Options**, select the specific SNS topic ARN from the dropdown and click on **Next**. <br/>
 *Note - If you want to create new SNS topic, refer [Creating a new SNS topic while stack creation.](#creating-a-new-sns-topic-while-stack-creation) This step is optional but recommended as per the best practices.* 
 
 ![](./media/NETSKOPE-CE-Stack-Advanced-Options-Exisiting-ARN.png)
 
-1.2.13 Review the Stack details.
+1.2.14 Review the Stack details.
 
 ![](./media/NETSKOPE-CE-Stack-Review.png)
 
 ![](./media/NETSKOPE-CE-Stack-Create_Resources_List.png)
 
-1.2.14 Select the checkbox of acknowledgment of IAM resources and click on **Create stack**.
+1.2.15 Select the checkbox of acknowledgment of IAM resources and click on **Create stack**.
 
 ![](./media/NETSKOPE-CE-Stack-ACK.png)
 
-1.2.15 Wait for the Creation of Stack to be completed.
+1.2.16 Wait for the Creation of Stack to be completed.
 
 ![](./media/NETSKOPE-CE-Stack-In-Progress.png)
 
@@ -205,7 +334,7 @@ After the successful creation, you can see the list of resources by selecting th
 ![](./media/NETSKOPE-CE-Stack-New-Resources-1.png)
 
 
-1.2.16 To access the application, refer to [Accessing Netskope CE](#accessing-netskope-ce).
+1.2.17 To access the application, refer to [Accessing Netskope CE](#accessing-netskope-ce).
 
 *Note - Consider following before Accessing the Netskope CE*
 * *For security reasons, Network ACL default Ingress from 0.0.0.0/0 for ports 22 and 3389 have been denied to block unauthorized access to the application via SSH and RDP. To allow them, the user needs to add a respective entry to ingress rules for Network ACL based on their use case.*
@@ -224,7 +353,7 @@ After the successful creation, you can see the list of resources by selecting th
 
 ![](./media/NETSKOPE-CE-CFT-MGMT-Console.png)
 
-2.2.4 Choose **Upload a template file** then click on Choose file. Choose the [CloudExchangeTemplate.yaml](https://github.com/netskopeoss/Netskope-CloudExchange-Amazon-ECS-Fargate/blob/main/CloudExchangeTemplate.yaml)  from the directory on your disk where you downloaded it to, click **Open** and then click **Next**.<br />
+2.2.4 Choose **Upload a template file** then click on Choose file. Choose the [CloudExchangeTemplate.yaml](https://github.com/netskopeoss/Netskope-CloudExchange-Amazon-ECS-Fargate/blob/main/CloudExchangeTemplate.yaml)  from the directory on your disk where you downloaded it to, click **Open** and then click **Next**.<br/>
 
 ![](./media/NETSKOPE-CE-Stack-Upload-Template.png)
 
@@ -232,7 +361,7 @@ After the successful creation, you can see the list of resources by selecting th
 
 ![](./media/NETSKOPE-CE-Stack-Name.png)
 
-2.2.6 In the Parameters section select **False** in **Create new resources?** and provide an appropriate value for **Environment name**.<br />
+2.2.6 In the Parameters section select **False** in **Create new resources?** and provide an appropriate value for **Environment name**.<br/>
 
 ![](./media/NETSKOPE-CE-Stack-Create-Resources-False.png)
 
@@ -260,8 +389,51 @@ After the successful creation, you can see the list of resources by selecting th
 
 ![](./media/NETSKOPE-CE-Stack-ALB-Details.png)
 
+2.2.8 Provide the **Existing IAM role for ECS Task creation & execution** and ignore the **Existing IAM role for read/modify EC2 Security Groups & NACLs** in **Existing IAM role details** section.<br/>
 
-2.2.8 Provide the **Existing resources details (applicable if 'Create new resources?' is 'False')**.
+*Note - This automation solution requires specific AWS IAM roles for ECS Task creation & execution and read/modify VPC default Security Groups & NACL for security best practices. Many times, the end users out of security constraints on their end can't allow the AWS IAM role's create/modify/delete permissions to the AWS user account or the AWS IAM role through which they are executing this automation. For such cases, we have given this provision of using pre-created AWS IAM roles on the customer's end for the respective purposes of this automation rather than the automation itself creating those IAM roles. Also note that for the current use case where the end-user uses the existing VPC, etc. network components, we do not modify the VPC Security Group & NACL rules, hence, the respective IAM role parameter is not applicable here as shown in the screenshot below.*
+
+![](./media/NETSKOPE-CE-Stack-Existing-IAM-Role-Details.png)
+
+
+* **Creating the ECS Task creation and execution IAM role** </br>
+  * Open the IAM console at https://console.aws.amazon.com/iam/.
+  * In the navigation pane, choose Roles, Create role.
+  * For Use case, choose Elastic Container Service Task, then choose Next.
+  * In the Attach permissions policy section, do the following:
+    * Search for AmazonECSTaskExecutionRolePolicy, then select the policy.
+    * Under Set permissions boundary - optional, choose Create role without a permissions boundary.
+    * Choose Next.
+  * Under Role details, do the following:
+    * For Role name, type Rolename of your choice.
+    * For Add tags (optional), specify any custom tags to associate with the policy.
+  * Choose Create role.
+</br></br>
+* **Create ECS Task role and Task execution policy** </br>
+  * Amazon ECS provides the managed policy named AmazonECSTaskExecutionRolePolicy which contains the permissions for the common use cases. User need to add additional inline policies to task execution role.
+
+    ```json
+    {
+      "Version": "2012-10-17",
+      "Statement": [
+      {
+        "Effect": "Allow",
+        "Action": [
+          "ecr:GetAuthorizationToken",
+          "ecr:BatchCheckLayerAvailability",
+          "ecr:GetDownloadUrlForLayer",
+          "ecr:BatchGetImage",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+          "elasticfilesystem:ClientMount",
+          "elasticfilesystem:ClientWrite",
+        ],
+        "Resource": "*"
+      }
+     ]
+    }
+    ```
+2.2.9 Provide the **Existing resources details (applicable if 'Create new resources?' is 'False')**.
 
 *Notes* 
 * *You have to enter the details of the resources that are available in your existing AWS infrastructure.*<br/>
@@ -269,6 +441,7 @@ After the successful creation, you can see the list of resources by selecting th
   * *If **Existing  ECS cluster name** field is blank - A new ECS Cluster will be created.*
   * *If **Existing  ECS cluster name** field is provided - It will check for the Cluster, if the Cluster is present, then it will be used as an existing resource or else it will throw the error at the time of stack creation.*
 * *In the case of using existing VPC, for security reasons, the following implementations are optional but recommended.* 
+  * *VPC Flow Logs should be enabled (refer [this](https://docs.aws.amazon.com/vpc/latest/userguide/flow-logs-cwl.html#flow-logs-cwl-create-flow-log))*
   *  *Network ACLs should not allow ingress from 0.0.0.0/0 to port 22 or port 3389.*
   * *The VPC default security group should not allow any inbound and outbound traffic.*
 
@@ -280,7 +453,7 @@ To Find Existing resources details please follow the details below.
 * For VPC CIDR block - [Finding a VPC CIDR block](#finding-a-vpc-cidr-block)
 * For ECS Cluster Name - [Finding ECS Cluster Name](#finding-ecs-cluster-name)
 
-2.2.9 Enter the Environment variables required for Netskope CE Deployment and click on **Next**. <br/><br/>
+2.2.10 Enter the Environment variables required for Netskope CE Deployment and click on **Next**. <br/><br/>
 **Environment variables** <br/>
 * JWT secrets: A random secure string that will be used for signing the authentication tokens.
 * Maintainance password: A maintenance password that will be used for RabbitMQ and MongoDB services (This password can be set only once).
@@ -292,31 +465,31 @@ To Find Existing resources details please follow the details below.
 
 ![](./media/NETSKOPE-CE-ENV-VARS.png)
 
-2.2.10 In the **Configure stack options** section, specify tags (key-value pairs) to apply to resources in your stack. You can add up to 50 unique tags for each stack.
+2.2.11 In the **Configure stack options** section, specify tags (key-value pairs) to apply to resources in your stack. You can add up to 50 unique tags for each stack.
 
 ![](./media/NETSKOPE-CE-Stack-Tags.png)
 
-2.2.11 In the **Permissions** section, choose an IAM role to explicitly define how CloudFormation can create, modify, or delete resources in the stack. If you don't choose a role, CloudFormation uses permissions based on your user credentials.
+2.2.12 In the **Permissions** section, choose an IAM role to explicitly define how CloudFormation can create, modify, or delete resources in the stack. If you don't choose a role, CloudFormation uses permissions based on your user credentials.
 
 ![](./media/NETSKOPE-CE-Stack-Permissions.png)
 
-2.2.12 Expand the **Notification options** in **Advanced Options**, select the specific SNS topic ARN from the dropdown and click on **Next**. <br/>
+2.2.13 Expand the **Notification options** in **Advanced Options**, select the specific SNS topic ARN from the dropdown and click on **Next**. <br/>
 *Note - If you want to create new SNS topic, refer [Creating a new SNS topic while stack creation.](#creating-a-new-sns-topic-while-stack-creation) This step is optional but recommended as per the best practices.*
 
 ![](./media/NETSKOPE-CE-Stack-Advanced-Options-Exisiting-ARN.png)
 
-2.2.13 Review the Stack details.
+2.2.14 Review the Stack details.
 
 ![](./media/NETSKOPE-CE-Stack-Review.png)
 
 ![](./media/NETSKOPE-CE-Stack-Existing-Resources_List.png)
 
-2.2.14 Select the checkbox of acknowledgment of IAM resources and click on **Create stack**.
+2.2.15 Select the checkbox of acknowledgment of IAM resources and click on **Create stack**.
 
 ![](./media/NETSKOPE-CE-Stack-ACK.png)
 
 
-2.2.15 Wait for the Creation of Stack to be completed.
+2.2.16 Wait for the Creation of Stack to be completed.
 
 ![](./media/NETSKOPE-CE-Stack-In-Progress.png)
 
@@ -327,7 +500,7 @@ After the successful creation, you can see the list of resources by selecting th
 ![](./media/NETSKOPE-CE-Stack-Existing-Resources-1.png)
 
 
-2.2.16 To access the application, refer to [Accessing Netskope CE](#accessing-netskope-ce).
+2.2.17 To access the application, refer to [Accessing Netskope CE](#accessing-netskope-ce).
 
 ### Finding a VPC ID
 Go to VPC Console, select **VPCs** and the relevant VPC. The VPC details page for the selected VPC opens with information including the VPC ID.
@@ -445,28 +618,28 @@ After selecting the relevent task, it opens the information including the privat
 ## Security Competency Aspects
 <div style="text-align: justify">
 
-1. Application Health Monitoring</br>
-Post the successful CloudFormation stack creation, please follow the steps here for [accessing Netskope Cloud Exchange](#accessing-netskope-ce) and then, follow the below steps for monitoring the overall application health.</br>
+1. Application Health Monitoring<br/>
+Post the successful CloudFormation stack creation, please follow the steps here for [accessing Netskope Cloud Exchange](#accessing-netskope-ce) and then, follow the below steps for monitoring the overall application health.<br/>
     * Please open the login page for Netskope Cloud Exchange in the browser.
-    * One can check whether or not all of the services are up by hovering over the information **"i"**  button on the top-right corner of the login page. It will display the health status of all the Cloud Exchange containers as seen in the screenshot below.</br>
+    * One can check whether or not all of the services are up by hovering over the information **"i"**  button on the top-right corner of the login page. It will display the health status of all the Cloud Exchange containers as seen in the screenshot below.<br/>
     ![](./media/NETSKOPE-CE-SCA-AHM1.png)
     * Please login to the Netskope Cloud Exchange.
-    * The **System Status** dashboard on the **System Status** tab opens by default as the **Home** page after first logging into the Cloud Exchange. This page will show an overall health status of the Netskope Cloud Exchange deployment as seen in the screenshot below.</br>
+    * The **System Status** dashboard on the **System Status** tab opens by default as the **Home** page after first logging into the Cloud Exchange. This page will show an overall health status of the Netskope Cloud Exchange deployment as seen in the screenshot below.<br/>
     ![](./media/NETSKOPE-CE-SCA-AHM2.png)
-    * Examining the **Logging** page in the left-side pane will allow the end user to determine whether the application features are high-level functioning effectively or not.</br>
+    * Examining the **Logging** page in the left-side pane will allow the end user to determine whether the application features are high-level functioning effectively or not.<br/>
     ![](./media/NETSKOPE-CE-SCA-AHM3.png)
-    * The application's status can further be checked using the **Syslog for CE** plugin. The CE logs are forwarded using this plugin into the SIEM platform. It is possible to set up the SIEM mapping between the Syslog service plugin and the SIEM Platform and to keep track of the logs as they are sent to the SIEM. If the SIEM's log delivery stops, the end user will be able to suspect something going wrong with the Netskope Cloud Exchange application.</br>
+    * The application's status can further be checked using the **Syslog for CE** plugin. The CE logs are forwarded using this plugin into the SIEM platform. It is possible to set up the SIEM mapping between the Syslog service plugin and the SIEM Platform and to keep track of the logs as they are sent to the SIEM. If the SIEM's log delivery stops, the end user will be able to suspect something going wrong with the Netskope Cloud Exchange application.<br/>
     ![](./media/NETSKOPE-CE-SCA-AHM4.png)
 
-2. Sensitive Data Storage Information</br>
+2. Sensitive Data Storage Information<br/>
 Below is the primary confidential information for Netskope Cloud Exchange.
-    * **JWT Secret & Maintenance Password** - These are user-configurable at the time of running AWS CloudFormation template. These are masked on the AWS Stack UI. These are stored in the environment variables of the CE container images deployed on AWS ECS Fargate. </br>
+    * **JWT Secret & Maintenance Password** - These are user-configurable at the time of running AWS CloudFormation template. These are masked on the AWS Stack UI. These are stored in the environment variables of the CE container images deployed on AWS ECS Fargate. <br/>
     * **Configuration Passwords & Secret Keys & Access Keys** - These are stored in the data of the AWS ECS Fargate managed **MongoDB** container itself.
 
-3. Sensitive Data Rotation Information</br>
+3. Sensitive Data Rotation Information<br/>
 The end users can change the password of Netskope Cloud Exchange through the UI.
     * Click on the **Account** link in the left-navigation pane. It will open a pop-up for Account information.
-    * Click on the **Change Password** button and follow the process to change the password as shown in the below screenshots.</br>
+    * Click on the **Change Password** button and follow the process to change the password as shown in the below screenshots.<br/>
     ![](./media/NETSKOPE-CE-SCA-SDR1.png)
     ![](./media/NETSKOPE-CE-SCA-SDR2.png)
     * It is recommended not to change any other secret tokens like JWT Secret, Maintenance Password, etc.
@@ -534,6 +707,7 @@ Please follow below steps for enable deletion protection in ALB.<br/>
 
 </div>
 
+
 ## Basic Troubleshooting
 <div style="text-align: justify">
 
@@ -546,12 +720,33 @@ Please follow below steps for removing deletion protection in ALB.<br/>
 ![](./media/NETSKOPE-CE-BP-ALB-Edit-Attributes.png)
 4.2 Deselect the checkbox of **Deletion protection** and close the dialogue box.
 ![](./media/NETSKOPE-CE-TS-ALB-Remove-Deletion-Protection.png)
+5. Verify subscription of AWS Marketplace solution "Netskope Cloud Exchange for Amazon ECS" <br/>
+5.1 Setup AWS Command Line Interface (refer [this](https://docs.aws.amazon.com/polly/latest/dg/setup-aws-cli.html)) <br/>
+5.2 Use below set of commands to pull Netskope CE Container Images.
+
+    ```
+    $ aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 709825985650.dkr.ecr.us-east-1.amazonaws.com
+
+    # Replace <tag> to "Image" tag from the Cloudformation template "taskdefinition" section 
+
+    $ CONTAINER_IMAGES="
+    709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/ui3:<tag>,
+    709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/core3:<tag>,
+    709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/mongodb:<tag>,
+    709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/rabbitmq:<tag>" 
+
+    $ for i in $(echo $CONTAINER_IMAGES | sed "s/,/ /g"); do docker pull $i; done
+
+    # If all the images pulled successfully then user is subscribed to the AWS Marketplace solution "Netskope Cloud Exchange for Amazon ECS"
+
+  ```
+
 
 </div>
 
 ## FAQs
 
-**Problem Statement** <br>
+**Problem Statement** <br/>
 If you get following error -  *"STOPPED (ResourceInitializationError: unable to pull secrets or registry auth: execution resource retrival failed: unable to retrieve ECR registry auth: service call has been retried 3 time(s)."*
 
 **Root Cause** <br/>

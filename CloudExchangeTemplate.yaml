@@ -16,6 +16,12 @@ Metadata:
           - ExistingTargetGroup
 
       - Label:
+          default: "Existing IAM role details"
+        Parameters:
+          - ExistingECSTaskRole
+          - ExistingSGandNACLLambdaRole
+
+      - Label:
           default: "Existing resources details (applicable if 'Create new resources?' is 'False')"
         Parameters:
           - ExistingVPCId
@@ -33,6 +39,7 @@ Metadata:
           - PrivateSubnet2CIDR
           - PublicSubnet1CIDR
           - PublicSubnet2CIDR
+          - EnableVPCFlowLog
 
       - Label:
           default: "Environment variables"
@@ -92,6 +99,13 @@ Metadata:
         default: "Environment name"
       CreateALB:
         default: "Create Application Load Balancer?"
+      ExistingECSTaskRole:
+        default: "Existing IAM role for ECS Task creation & execution"
+      ExistingSGandNACLLambdaRole:
+        default: "Existing IAM role for read/modify Security Groups & NACL"
+      EnableVPCFlowLog:
+        default: "Enable VPC Flow Logs"
+
 
 Parameters:
   CreateResources:
@@ -210,6 +224,20 @@ Parameters:
     Default: "True"
     AllowedValues: ["True", "False"]
 
+  ExistingECSTaskRole:
+    Description: "Enter the ARN of the existing IAM role having required permissions for ECS Task creation/execution (if provided existing IAM role will be used else if left blank, new IAM role will be created)"
+    Type: String
+
+  ExistingSGandNACLLambdaRole:
+    Description: "Enter the ARN of the existing IAM role having required permissions for read & modify Security Groups & NACL for security best practices (if provided existing IAM role will be used else if left blank, new IAM role will be created) (applicable if 'Create new resources?' is 'True' else completely ignored)"
+    Type: String
+
+  EnableVPCFlowLog:
+    Description: "Select 'True' to enable VPC Flow Logs (AWS user account or the AWS IAM role deploying the CLoudFormation stack requires AWS IAM access to enable VPC Flow Logs) (It is recommended to enable VPC Flow Logs as per security best practices)"
+    Type: String
+    Default: "True"
+    AllowedValues: ["True", "False"]
+
 Mappings:
   RegionMap:
     us-east-1:
@@ -279,6 +307,22 @@ Conditions:
   CreateALB: !Equals
     - !Ref CreateALB
     - "True"
+
+  CreateECSTaskRole: !Equals
+    - !Ref ExistingECSTaskRole
+    - ""
+
+  CreateLambdaRole: !Equals
+    - !Ref ExistingSGandNACLLambdaRole
+    - ""
+
+  VPCFlowLogCondition: !Equals
+    - !Ref EnableVPCFlowLog
+    - "True"
+
+  VPCFlowLogResourceCreation: !And [ Condition: CreateNewResources, Condition: VPCFlowLogCondition ]
+
+  SGandNACLModifyLambdaRole: !And [ Condition: CreateNewResources, Condition: CreateLambdaRole ]
 
   CreateWithALB: !Or [ Condition: CreateALB, Condition: ExistingALBFlag]
 
@@ -500,6 +544,7 @@ Resources:
 
   NetskopeCloudExchangeTaskExecutionRole:
     Type: "AWS::IAM::Role"
+    Condition: CreateECSTaskRole
     Properties:
       RoleName: !Sub "NetskopeCloudExchangeTaskExecutionRole-${AWS::StackName}"
       AssumeRolePolicyDocument:
@@ -517,6 +562,7 @@ Resources:
 
   NetskopeCloudExchangeTaskRole:
     Type: "AWS::IAM::Role"
+    Condition: CreateECSTaskRole
     Properties:
       RoleName: !Sub "NetskopeCloudExchangeTaskRole-${AWS::StackName}"
       AssumeRolePolicyDocument:
@@ -545,7 +591,7 @@ Resources:
 
   VPCFlowLogRole:
     Type: "AWS::IAM::Role"
-    Condition: CreateNewResources
+    Condition: VPCFlowLogResourceCreation
     Properties:
       RoleName: !Sub "NetskopeCloudExchangeFlowLogRole-${AWS::StackName}"
       AssumeRolePolicyDocument:
@@ -573,7 +619,7 @@ Resources:
 
   VPCFlowLog:
     Type: AWS::EC2::FlowLog
-    Condition: CreateNewResources
+    Condition: VPCFlowLogResourceCreation
     Properties:
       DeliverLogsPermissionArn: !GetAtt VPCFlowLogRole.Arn
       LogGroupName: !Sub "Netskope-CE-VPC-FlowLogsGroup-${AWS::StackName}"
@@ -638,9 +684,25 @@ Resources:
           ToPort: 2049
           SourceSecurityGroupId: !Ref TaskSecurityGroup
 
+
+  RoleWaitHandle:
+    Condition: CreateECSTaskRole
+    DependsOn: NetskopeCloudExchangeTaskRole
+    Type: "AWS::CloudFormation::WaitConditionHandle"
+
+  RoleWaitHandleFalse:
+    Type: "AWS::CloudFormation::WaitConditionHandle"
+
+  RoleWaitCondition:
+    Type: "AWS::CloudFormation::WaitCondition"
+    Properties:
+      Handle: !If [CreateECSTaskRole, !Ref RoleWaitHandle, !Ref RoleWaitHandleFalse]
+      Timeout: "1"
+      Count: 0
+
   NetskopeCloudExchangeEFS:
     Type: "AWS::EFS::FileSystem"
-    DependsOn: NetskopeCloudExchangeTaskRole
+    DependsOn: RoleWaitCondition
     Properties:
       BackupPolicy:
         Status: ENABLED
@@ -656,7 +718,7 @@ Resources:
               - "elasticfilesystem:ClientMount"
               - "elasticfilesystem:ClientWrite"
             Principal:
-              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:role/NetskopeCloudExchangeTaskRole-${AWS::StackName}"
+              AWS: !If [CreateECSTaskRole, !Sub "arn:aws:iam::${AWS::AccountId}:role/NetskopeCloudExchangeTaskRole-${AWS::StackName}", !Ref ExistingECSTaskRole]
             Condition:
               Bool:
                 "aws:SecureTransport": true
@@ -942,9 +1004,8 @@ Resources:
             Timeout: 10
             Retries: 10
             StartPeriod: 60
-
-      TaskRoleArn: !Ref NetskopeCloudExchangeTaskRole
-      ExecutionRoleArn: !Ref NetskopeCloudExchangeTaskExecutionRole
+      TaskRoleArn: !If [CreateECSTaskRole, !Ref NetskopeCloudExchangeTaskRole, !Ref ExistingECSTaskRole]
+      ExecutionRoleArn: !If [CreateECSTaskRole, !Ref NetskopeCloudExchangeTaskExecutionRole, !Ref ExistingECSTaskRole]
       NetworkMode: awsvpc
       Volumes:
         - Name: mongo-data
@@ -1187,8 +1248,7 @@ Resources:
 
   LambdaRole:
     Type: AWS::IAM::Role
-    Condition: CreateNewResources
-    DependsOn: VPC
+    Condition: SGandNACLModifyLambdaRole
     Properties:
       RoleName: !Sub LambdaRole_${EnvName}
       AssumeRolePolicyDocument:
@@ -1225,7 +1285,7 @@ Resources:
     DependsOn: VPC
     Properties:
       FunctionName: !Sub RevokeDefaultVPCSGRule_${EnvName}
-      Role: !GetAtt LambdaRole.Arn
+      Role: !If [SGandNACLModifyLambdaRole, !GetAtt LambdaRole.Arn, !Ref ExistingSGandNACLLambdaRole]
       Runtime: python3.7
       Handler: index.lambda_handler
       MemorySize: 128
@@ -1309,7 +1369,7 @@ Resources:
     DependsOn: VPC
     Properties:
       FunctionName: !Sub RevokeDefaultVPCNACLRule_${EnvName}
-      Role: !GetAtt LambdaRole.Arn
+      Role: !If [SGandNACLModifyLambdaRole, !GetAtt LambdaRole.Arn, !Ref ExistingSGandNACLLambdaRole]
       Runtime: python3.7
       Handler: index.lambda_handler
       MemorySize: 128
@@ -1510,14 +1570,6 @@ Outputs:
   RabbitMQAccessPoint:
     Value: !Ref RabbitMQAccessPoint
     Description: RabbitMQ Access Point
-
-  NetskopeCloudExchangeTaskExecutionRole:
-    Value: !GetAtt NetskopeCloudExchangeTaskExecutionRole.Arn
-    Description: Netskope Cloud Exchange task execution role
-
-  NetskopeCloudExchangeTaskRole:
-    Value: !GetAtt NetskopeCloudExchangeTaskRole.Arn
-    Description: Netskope Cloud Exchange task role
 
   TaskSecurityGroup:
     Value: !Ref TaskSecurityGroup
