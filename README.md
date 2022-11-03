@@ -615,6 +615,77 @@ After selecting the relevent task, it opens the information including the privat
 
 ![](./media/NETSKOPE-CE-BH-Task-Private-IP.png)
 
+
+## Upgrade Existing Netskope CE Stack (Core & UI container images) to Latest Version
+<div style="text-align: justify">
+
+We assume that the end user will be having an already deployed Netskope CE application (old version) using the current AWS Cloudformation automation template. Now the user wants to upgrade Netskope CE Core and UI container images to the latest available version. For this upgrade scenario, please follow the below steps.
+
+
+**Note:** As per the Netskope CE product design there is no mechanism for recovering the lost RabbitMQ queue data. Hence, it is recommended to ensure that there is no ongoing processing within the application at the time of performing an upgrade. Though, there will be no data loss for MongoDB as a part of the below upgrade process. This upgrade process is meant to upgrade only Core and UI Container images and not meant to upgrade MongoDB and RabbitMQ images.
+
+1. Open the Amazon ECS console at https://console.aws.amazon.com/ecs/.
+2. On the navigation bar, select the Region that your cluster is in.
+3. In the navigation pane, choose **Clusters**.
+4. On the Clusters page, select the name of the cluster in which your service resides.
+
+    ![](./media/NETSKOPE-CE-Stack-ECS-Cluster.png)
+
+5. On the **Cluster : [name]** page, choose **Services**.
+6. Check the box to the left of the service to update and choose **Update**.
+
+
+    ![](./media/NETSKOPE-CE-Cluster-Service.png)
+
+7. On the Configure service page, your service information is pre-populated. Change **Number of tasks** to **0** from **1**.
+
+    ![](./media/NETSKOPE-CE-Service-Configuration.png)
+
+8. Choose **Next Step**
+9. On the Configure deployments page, choose **Next step**.
+10. On the Configure network page, choose **Next step**.
+11. Go back to **Cluster : [name]** page, choose **Tasks**.
+12. Check the box to the left of the Tasks to stop and choose **Stop**.
+
+    ![](./media/NETSKOPE-CE-Cluster-Tasks.png)
+
+13. Download the updated **[CloudExchangeTemplate.yaml](https://github.com/netskopeoss/Netskope-CloudExchange-Amazon-ECS-Fargate/blob/main/CloudExchangeTemplate.yaml)** which contains the references to the latest CE Core and UI container images for an upgrade.
+
+14. On the Stacks page of the AWS CloudFormation console, click the name of the stack that you want to update and choose Update.
+
+    ![](./media/NETSKOPE-CE-CFN-Stack.png)
+
+15. On the Update stack page, choose **Replace current template** and select **Upload a template file**.
+
+16. Choose **Choose file** and select the latest **CloudExchangeTemplate.yaml** file.
+
+    ![](./media/NETSKOPE-CE-Update-Stack.png)
+
+17. Choose **Next**
+
+18. On the Specify stack details, choose Next.
+
+19. On the Configure stack options, choose **Roll back all stack resources** option for **Stack failure options** and choose Next.
+
+    ![](./media/NETSKOPE-CE-Stack-Failure-Option.png)
+
+20. On the **Review: [StackName]** page, choose Submit.
+
+21. Wait for the status to be **UPDATE_COMPLETE**.
+
+    ![](./media/NETSKOPE-CE-CFN-Update.png)
+
+22. With this, the entire upgrade process of CE Core and UI container images will be completed. Please Verify whether the upgraded CE application is back up and running as expected.
+
+
+**What if the Upgrade process fails?** <br/>
+If the upgrade process fails due to any unexpected scenario then, the stack will **Roll back all stack resources to the last known state** and there will be no critical data loss. If the stack is stuck at the **UPDATE_IN_PROGRESS** status for too long, then choose **Cancel update stack** from the **Stack actions** dropdown to cancel the stack update. **UPDATE_FAILED** and **UPDATE_CANCELLED** status will roll back all the stack resources to the last known state as we have chosen **Roll back all stack resources** for **Stack failure options** while updating the stack.
+
+  ![](./media/NETSKOPE-CE-Update-Rollback.png)
+
+</div>
+
+
 ## Security Competency Aspects
 <div style="text-align: justify">
 

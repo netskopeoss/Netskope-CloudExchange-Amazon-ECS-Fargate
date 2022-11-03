@@ -684,7 +684,7 @@ Resources:
           ToPort: 2049
           SourceSecurityGroupId: !Ref TaskSecurityGroup
 
-
+  
   RoleWaitHandle:
     Condition: CreateECSTaskRole
     DependsOn: NetskopeCloudExchangeTaskRole
