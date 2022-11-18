@@ -52,6 +52,7 @@ For example, the solution deploys 4 container instances on your Amazon ECS clust
 |Amazon ECS Task|1|[Amazon ECS service quotas](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service-quotas.html)|
 |Amazon ECS Cluster|1|[Amazon ECS service quotas](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service-quotas.html)|
 |Amazon ECS Container Instance|4|[Amazon ECS service quotas](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service-quotas.html)|
+|Amazon S3|2|[Amazon S3 quotas](https://docs.aws.amazon.com/general/latest/gr/s3.html)|
 
 
 ## Architecture Diagram
@@ -619,10 +620,10 @@ After selecting the relevent task, it opens the information including the privat
 ## Upgrade Existing Netskope CE Stack (Core & UI container images) to Latest Version
 <div style="text-align: justify">
 
-We assume that the end user will be having an already deployed Netskope CE application (old version) using the current AWS Cloudformation automation template. Now the user wants to upgrade Netskope CE Core and UI container images to the latest available version. For this upgrade scenario, please follow the below steps.
+We assume that the end user will be having an already deployed Netskope CE application (old version) using the current AWS Cloudformation automation template. Now the user wants to upgrade Netskope CE Core, UI, MongoDB, or RabbitMQ container images to the latest available version. For this upgrade scenario, please follow the below steps.
 
 
-**Note:** As per the Netskope CE product design there is no mechanism for recovering the lost RabbitMQ queue data. Hence, it is recommended to ensure that there is no ongoing processing within the application at the time of performing an upgrade. Though, there will be no data loss for MongoDB as a part of the below upgrade process. This upgrade process is meant to upgrade only Core and UI Container images and not meant to upgrade MongoDB and RabbitMQ images.
+**Note:** As per the Netskope CE product design there is no mechanism for recovering the lost RabbitMQ queue data. Hence, it is recommended to ensure that there is no ongoing processing within the application at the time of performing an upgrade. Though, there will be no data loss for MongoDB as a part of the below upgrade process.
 
 1. Open the Amazon ECS console at https://console.aws.amazon.com/ecs/.
 2. On the navigation bar, select the Region that your cluster is in.
@@ -649,7 +650,7 @@ We assume that the end user will be having an already deployed Netskope CE appli
 
     ![](./media/NETSKOPE-CE-Cluster-Tasks.png)
 
-13. Download the updated **[CloudExchangeTemplate.yaml](https://github.com/netskopeoss/Netskope-CloudExchange-Amazon-ECS-Fargate/blob/main/CloudExchangeTemplate.yaml)** which contains the references to the latest CE Core and UI container images for an upgrade.
+13. Download the updated **[CloudExchangeTemplate.yaml](https://github.com/netskopeoss/Netskope-CloudExchange-Amazon-ECS-Fargate/blob/main/CloudExchangeTemplate.yaml)** which contains the references to the latest CE Core, UI, MongoDB, and RabbitMQ container images for an upgrade.
 
 14. On the Stacks page of the AWS CloudFormation console, click the name of the stack that you want to update and choose Update.
 
@@ -675,7 +676,7 @@ We assume that the end user will be having an already deployed Netskope CE appli
 
     ![](./media/NETSKOPE-CE-CFN-Update.png)
 
-22. With this, the entire upgrade process of CE Core and UI container images will be completed. Please Verify whether the upgraded CE application is back up and running as expected.
+22. With this, the entire upgrade process of all 4 Netskope CE container images will be completed. Please Verify whether the upgraded CE application is back up and running as expected with the pre-existing data of MongoDB staying persistent.
 
 
 **What if the Upgrade process fails?** <br/>
