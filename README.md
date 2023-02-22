@@ -63,7 +63,9 @@ For example, the solution deploys 4 container instances on your Amazon ECS clust
 ## Prerequisites 
 The following prerequisites are required to implement the Netskope Cloud Exchange on AWS Fargate for Amazon ECS.
 
-1. This solution guide assumes working knowledge of the AWS management console. We also recommend that you become familiar with the following AWS services.
+1. It is highly recommended to please refer to the  [Testing Matrix](#testing-matrix) and [Upgrades Testing Matrix](#upgrades-testing-matrix) before proceeding with the further steps.
+
+2. This solution guide assumes working knowledge of the AWS management console. We also recommend that you become familiar with the following AWS services.
     * [AWS CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/GettingStarted.html) <br/>
     * [Amazon ECS](https://aws.amazon.com/ecs/) <br/>
     * [AWS Fargate](https://aws.amazon.com/fargate/) <br/>
@@ -71,14 +73,14 @@ The following prerequisites are required to implement the Netskope Cloud Exchang
     * [Amazon CloudWatch](https://aws.amazon.com/cloudwatch/) <br/>
 <br/>
 
-2. Subscription to marketplace solution ([AWS MarketPlace](https://aws.amazon.com/marketplace/pp/prodview-swtuwsyshtqj2)) in the same AWS account is needed (refer to point 5 of Basic Troubleshooting section below for more details).
+3. Subscription to marketplace solution ([AWS MarketPlace](https://aws.amazon.com/marketplace/pp/prodview-swtuwsyshtqj2)) in the same AWS account is needed (refer to point 5 of Basic Troubleshooting section below for more details).
 
-3. There are below 2 ways of executing the current AWS CloudFormation template. For both the below ways, the required permissions are mentioned in the next point.
+4. There are below 2 ways of executing the current AWS CloudFormation template. For both the below ways, the required permissions are mentioned in the next point.
     * Using an AWS User account with all necessary permissions<br/>
     * Using an AWS IAM role with all necessary permissions<br/>
 <br/>
 
-4. AWS user account or AWS IAM role deploying this Netskope CloudExchange application requires in general, permissions to the below set of AWS services to deploy Netskope CloudExchange CloudFormation Template **(CloudExchangeTemplate.yaml)**. Please make sure that the permissions are in accordance with that.
+5. AWS user account or AWS IAM role deploying this Netskope CloudExchange application requires in general, permissions to the below set of AWS services to deploy Netskope CloudExchange CloudFormation Template **(CloudExchangeTemplate.yaml)**. Please make sure that the permissions are in accordance with that.
 
     * AmazonEC2 <br/>
     * AWSCloudFormation <br/>
@@ -111,7 +113,7 @@ The following prerequisites are required to implement the Netskope Cloud Exchang
     * Review the role, and then choose Create role. <br/>
     <br/>
 
-5. If out of security constraints on the customer's end, one can't allow the AWS IAM role's create/modify/delete permissions to the AWS user account or the AWS IAM role through which they are executing this CloudFormation template, we have given a provision of using pre-created AWS IAM roles on the customer's end (refer to 1.2.8 and 2.2.8 sections below for more details) for the respective purposes of this automation (e.g. for ECS Task creation & execution, for read/modify VPC default Security Groups & NACL for ensuring security best practices) rather than the automation itself creating those IAM roles. Ignore this feature if they can provide AWS IAM permissions to the execution AWS user account or AWS IAM role and then, the automation itself will take care of creating the requisite IAM roles for aforementioned purposes.
+6. If out of security constraints on the customer's end, one can't allow the AWS IAM role's create/modify/delete permissions to the AWS user account or the AWS IAM role through which they are executing this CloudFormation template, we have given a provision of using pre-created AWS IAM roles on the customer's end (refer to 1.2.8 and 2.2.8 sections below for more details) for the respective purposes of this automation (e.g. for ECS Task creation & execution, for read/modify VPC default Security Groups & NACL for ensuring security best practices) rather than the automation itself creating those IAM roles. Ignore this feature if they can provide AWS IAM permissions to the execution AWS user account or AWS IAM role and then, the automation itself will take care of creating the requisite IAM roles for aforementioned purposes.
 
 ## Deployment & Configuration Steps
 
@@ -145,7 +147,19 @@ If you have your existing resources available, refer [ Customize Infrastructure 
 
 ![](./media/NETSKOPE-CE-Stack-Name.png)
 
-1.2.6 In the Parameters section select **True** in **Create new resources?** and provide an appropriate value for **Environment name**.<br/>
+1.2.6 In the Parameters section select **True** in **Create new resources?**,  provide an appropriate value for **Environment name**, and select **Package Type**.<br/>
+
+*Notes*
+  * Currently the Netskope Cloud Exchange (CE) users can select appropriate package out of four different packages available based on their workload requirements. Configuration of all the four packages has been given below:
+
+  |Package|CPU (count)|Memory|
+  | :- | :- | :- |
+  |Extra-Small|4|8|
+  |Small*|8|16|
+  |Medium|8|16|
+  |Large|16|32|
+
+&emsp; *The recommended resource specifications by Netskope CE for the Small Package Type are not supported in ECS Fargate, so a higher resource combination of 8 CPU and 16 GB Memory has been used instead.
 
 ![](./media/NETSKOPE-CE-Stack-Create-Resources-True.png)
 
@@ -362,7 +376,19 @@ After the successful creation, you can see the list of resources by selecting th
 
 ![](./media/NETSKOPE-CE-Stack-Name.png)
 
-2.2.6 In the Parameters section select **False** in **Create new resources?** and provide an appropriate value for **Environment name**.<br/>
+2.2.6 In the Parameters section select **False** in **Create new resources?**, provide an appropriate value for **Environment name**, and select **Package Type**.<br/>
+
+*Notes*
+  * Currently the Netskope Cloud Exchange (CE) users can select appropriate package out of four different packages available based on their workload requirements. Configuration of all the four packages has been given below:
+
+  |Package|CPU (count)|Memory|
+  | :- | :- | :- |
+  |Extra-Small|4|8|
+  |Small*|8|16|
+  |Medium|8|16|
+  |Large|16|32|
+
+&emsp; *The recommended resource specifications by Netskope CE for the Small Package Type are not supported in ECS Fargate, so a higher resource combination of 8 CPU and 16 GB Memory has been used instead.
 
 ![](./media/NETSKOPE-CE-Stack-Create-Resources-False.png)
 
@@ -617,7 +643,7 @@ After selecting the relevent task, it opens the information including the privat
 ![](./media/NETSKOPE-CE-BH-Task-Private-IP.png)
 
 
-## Upgrade Existing Netskope CE Stack (Core & UI container images) to Latest Version
+## Upgrade Existing Netskope CE Stack to Latest Version
 <div style="text-align: justify">
 
 We assume that the end user will be having an already deployed Netskope CE application (old version) using the current AWS Cloudformation automation template. Now the user wants to upgrade Netskope CE Core, UI, MongoDB, or RabbitMQ container images to the latest available version. For this upgrade scenario, please follow the below steps.
@@ -676,7 +702,7 @@ We assume that the end user will be having an already deployed Netskope CE appli
 
     ![](./media/NETSKOPE-CE-CFN-Update.png)
 
-22. With this, the entire upgrade process of all 4 Netskope CE container images will be completed. Please Verify whether the upgraded CE application is back up and running as expected with the pre-existing data of MongoDB staying persistent.
+22. With this, the entire upgrade process of all 4 Netskope CE container images will be completed. Please Verify whether the upgraded CE application is back up and running.
 
 
 **What if the Upgrade process fails?** <br/>
@@ -810,11 +836,40 @@ Please follow below steps for removing deletion protection in ALB.<br/>
     $ for i in $(echo $CONTAINER_IMAGES | sed "s/,/ /g"); do docker pull $i; done
 
     # If all the images pulled successfully then user is subscribed to the AWS Marketplace solution "Netskope Cloud Exchange for Amazon ECS"
-
-  ```
+    ```
 
 
 </div>
+
+
+## Testing Matrix
+This section depicts the container platforms and CE version on which we have tested the current latest AWS CloudFormation Template for NetskopeCE ECS Fargate Deployment.
+
+| Vendor       | Service Name                                  | Component Versions        | Component Configurations            |
+| ------------ | --------------------------------------------- | ------------------------- | ----------------------------------- |
+| AWS    | ECS Fargate             | 1.4.0 Fargate Version          |1 Task, 4 Cores CPU, and 8 GB Memory |
+
+| Container Name | Version                                           | 
+| ---------------| ------- |
+| Core           | 4.1.0        | 
+| UI           | 4.1.0        | 
+| MongoDB        | DockerHub Official 5.0        | 
+| RabbitMQ        | DockerHub Official 3.9       |
+
+**Note:** The current **Latest CFT** is compatible with only CE v4.1.0 onwards (as mentioned in the container images combination of the above table) and it is not compatible with previous CE versions. The reason for the same is because of the MongoDB and RabbitMQ images changed from Bitnami to DockerHub Official ones starting CE v4.1.0.
+
+## Upgrades Testing Matrix
+
+We have tested the below upgrade scenarios with data staying persistent.
+
+| Container Name | From Version (deployed using Old CFT) | To Version (Upgrade 1 deployed using Old CFT) | To Version (Upgrade 2 deployed using Latest CFT) |
+| ---------------| ------- | ------- | ------- |
+| Core           | 3.4.0        | 4.0.0 | 4.1.0 |  
+| UI           | 3.4.0        | 4.0.0 | 4.1.0 | 
+| MongoDB        | Bitnami 4.4        | Bitnami 4.4 | DockerHub Official 5.0 |
+| RabbitMQ        | Bitnami 3.9       | Bitnami 3.9 | DockerHub Official 3.9 |
+
+**Note:** With ***Old CFT***, we are referring to the AWS CloudFormation Template version respective to the main branch commit hash ***bf71b9d1799ea8239da5bd2c29aee94725f9b46f***. With Latest CFT, we are referring to the currently hosted latest AWS CloudFormation Template code in the main branch of this repository.
 
 ## FAQs
 

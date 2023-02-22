@@ -8,6 +8,7 @@ Metadata:
         Parameters:
           - CreateResources
           - EnvName
+          - PackageType
 
       - Label:
           default: "Application Load Balancer details"
@@ -105,6 +106,8 @@ Metadata:
         default: "Existing IAM role for read/modify Security Groups & NACL"
       EnableVPCFlowLog:
         default: "Enable VPC Flow Logs"
+      PackageType:
+        default: "Package Type"
 
 
 Parameters:
@@ -238,6 +241,13 @@ Parameters:
     Default: "True"
     AllowedValues: ["True", "False"]
 
+  PackageType:
+    Description: "Select the package type based on the Netskope CE use case"
+    Type: String
+    Default: "Medium"
+    AllowedValues: [ "Extra-Small", "Small", "Medium", "Large" ]
+
+
 Mappings:
   RegionMap:
     us-east-1:
@@ -292,6 +302,26 @@ Mappings:
       ELBId: "638102146993"
     cn-northwest-1:
       ELBId: "037604701340"
+
+  CPUMapping:
+    Extra-Small:
+      CPU: 4096
+    Small:
+      CPU: 8192
+    Medium:
+      CPU: 8192
+    Large:
+      CPU: 16384
+
+  MemoryMapping:
+    Extra-Small:
+      Memory: 8192
+    Small:
+      Memory: 16384
+    Medium:
+      Memory: 16384
+    Large:
+      Memory: 32768
 
 Conditions:
   ECSClusterFlag: !Equals
@@ -749,7 +779,21 @@ Resources:
         Uid: "1001"
         Gid: "1001"
       RootDirectory:
-        Path: "/data/mongo-data"
+        Path: "/data/mongo-data/data/db"
+        CreationInfo:
+          OwnerGid: "1001"
+          OwnerUid: "1001"
+          Permissions: "0777"
+
+  MongoDBInitAccessPoint:
+    Type: "AWS::EFS::AccessPoint"
+    Properties:
+      FileSystemId: !Ref NetskopeCloudExchangeEFS
+      PosixUser:
+        Uid: "1001"
+        Gid: "1001"
+      RootDirectory:
+        Path: "/data/mongo-init"
         CreationInfo:
           OwnerGid: "1001"
           OwnerUid: "1001"
@@ -816,22 +860,39 @@ Resources:
     Type: "AWS::ECS::TaskDefinition"
     Properties:
       ContainerDefinitions:
+        - Name: mongodb-init
+          Image: bash
+          Essential: false
+          Command:
+            - -c
+            - echo $DATA | base64 -d - | tee /docker-entrypoint-initdb.d/init.sh
+          Environment:
+            - Name: DATA
+              Value:
+                Fn::Base64: |
+                  mongosh $MONGO_INITDB_DATABASE --authenticationDatabase admin -u $MONGO_INITDB_ROOT_USERNAME -p $MONGO_INITDB_ROOT_PASSWORD --eval "db.createUser({user: '$MONGODB_USERNAME', pwd: '$MONGODB_PASSWORD', roles: [{ role: 'dbOwner', db: '$MONGO_INITDB_DATABASE'}]})"
+          MountPoints:
+            - SourceVolume: mongo-init
+              ContainerPath: /docker-entrypoint-initdb.d
+              ReadOnly: false
+          VolumesFrom: []
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Sub /aws/ecs/Netskope-Cloud-Exchange-3-${EnvName}
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: Netskope
+
         - Name: mongodb-primary
-          Image: "709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/mongodb:05252022"
+          Image: "index.docker.io/mongo:5.0"
+          User: 1001:1001
           Cpu: 0
           PortMappings:
             - ContainerPort: 27017
               HostPort: 27017
               Protocol: tcp
           Essential: true
-          Command: []
           Environment:
-            - Name: MONGODB_SYSTEM_LOG_VERBOSITY
-              Value: "0"
-            - Name: MONGODB_DATABASE
-              Value: cte
-            - Name: MONGODB_ROOT_PASSWORD
-              Value: !Ref MAINTENANCEPASSWORD
             - Name: MONGODB_ADVERTISED_HOSTNAME
               Value: localhost
             - Name: MONGODB_PASSWORD
@@ -842,9 +903,18 @@ Resources:
               Value: !Ref HTTPPROXY
             - Name: HTTPS_PROXY
               Value: !Ref HTTPSPROXY
+            - Name: MONGO_INITDB_ROOT_USERNAME
+              Value: root
+            - Name: MONGO_INITDB_ROOT_PASSWORD
+              Value: !Ref MAINTENANCEPASSWORD
+            - Name: MONGO_INITDB_DATABASE
+              Value: cte
           MountPoints:
+            - SourceVolume: mongo-init
+              ContainerPath: /docker-entrypoint-initdb.d
+              ReadOnly: true
             - SourceVolume: mongo-data
-              ContainerPath: /bitnami/mongodb
+              ContainerPath: /data/db
               ReadOnly: false
           VolumesFrom: []
           LogConfiguration:
@@ -865,7 +935,7 @@ Resources:
             StartPeriod: 60
 
         - Name: core
-          Image: "709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/core3:11012022"
+          Image: "netskopetechnicalalliances/cloudexchange:core4-latest"
           Cpu: 0
           PortMappings: []
           Essential: true
@@ -889,12 +959,31 @@ Resources:
               Value: HS256
             - Name: JWT_SECRET
               Value: !Ref JWTSECRET
-            - Name: INITIAL_WAIT
-              Value: "600"
             - Name: ANALYTICS_BASE_URL
               Value: "https://reporting.netskope.tech"
             - Name: ANALYTICS_TOKEN
               Value: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpbnN0YWxsYXRpb25faWQiOiJjMDAyIn0.w8SVrTcDjk8PkR4IcbWGwOyf6-OWfCUyOoCTgZvqHqc
+            - Name: CORE_TAG
+              Value: "core-4.1.0_531_Fargate"
+            - Name: UI_TAG
+              Value: "ui4-beta"
+            - Name: MAX_MAINTENANCE_WINDOW_MINUTES
+              Value: "15"
+            - Name: PULL_THREADS
+              Value: "4"
+            - Name: MAX_WAIT_ON_LOCK_IN_MINUTES
+              Value: "240"
+            - Name: HTTP_PROXY
+              Value: !Ref HTTPPROXY
+            - Name: HTTPS_PROXY
+              Value: !Ref HTTPSPROXY
+            - Name: REQUESTS_TIMEOUT
+              Value: "300"
+            - Name: POPEN_TIMEOUT
+              Value: "1800"
+            - Name: UI_SERVICE_NAME
+              Value: "localhost"
+            
           MountPoints:
             - SourceVolume: custom_plugins
               ContainerPath: /opt/netskope/plugins/custom_plugins
@@ -912,14 +1001,14 @@ Resources:
           HealthCheck:
             Command:
               - CMD-SHELL
-              - nc -vz localhost 80 || exit 1
+              - nc -vz localhost 8000 || exit 1
             Interval: 10
             Timeout: 10
             Retries: 10
             StartPeriod: 60
 
         - Name: ui
-          Image: "709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/ui3:11012022"
+          Image: "netskopetechnicalalliances/cloudexchange:ui4-latest"
           Cpu: 0
           PortMappings:
             - ContainerPort: 3000
@@ -928,10 +1017,12 @@ Resources:
           Essential: true
           Command: []
           Environment:
-            - Name: CE_API_URL
-              Value: "http://localhost"
             - Name: TLS_VERSION
               Value: !Ref TLSVersion
+            - Name: CE_API_URL
+              Value: "http://localhost"
+            - Name: CE_API_PORT
+              Value: "8000"
           MountPoints:
             - SourceVolume: ssl_certs
               ContainerPath: /tmp/ssl_certs
@@ -956,7 +1047,7 @@ Resources:
             StartPeriod: 60
 
         - Name: rabbitmq-stats
-          Image: "709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/rabbitmq:05252022"
+          Image: "index.docker.io/rabbitmq:3.9-management"
           Cpu: 0
           PortMappings:
             - ContainerPort: 15672
@@ -966,30 +1057,23 @@ Resources:
               HostPort: 5672
               Protocol: tcp
           Essential: true
-          Command: []
+          EntryPoint: ["/bin/bash","-c","echo $RABBITMQERLCOOKIE > /var/lib/rabbitmq/.erlang.cookie && chmod 600 /var/lib/rabbitmq/.erlang.cookie && docker-entrypoint.sh rabbitmq-server"]
           Environment:
-            - Name: RABBITMQ_SECURE_PASSWORD
-              Value: "yes"
-            - Name: RABBITMQ_NODE_NAME
-              Value: rabbit@127.0.0.1
-            - Name: RABBITMQ_ERL_COOKIE
-              Value: !Ref MAINTENANCEPASSWORD
-            - Name: RABBITMQ_NODE_TYPE
-              Value: stats
-            - Name: RABBITMQ_USE_LONGNAME
-              Value: "true"
-            - Name: RABBITMQ_PASSWORD
-              Value: !Ref MAINTENANCEPASSWORD
-            - Name: RABBITMQ_DISK_FREE_ABSOLUTE_LIMIT
+            - Name: RABBITMQ_DISK_FREE_LIMIT_ABSOLUTE
               Value: 1
+            - Name: RABBITMQ_NODENAME
+              Value: rabbit@localhost
+            - Name: RABBITMQ_DEFAULT_USER
+              Value: user
+            - Name: RABBITMQ_DEFAULT_PASS
+              Value: !Ref MAINTENANCEPASSWORD
+            - Name: RABBITMQERLCOOKIE
+              Value: !Ref MAINTENANCEPASSWORD
           MountPoints:
             - SourceVolume: rabbitmq
-              ContainerPath: /bitnami/rabbitmq/conf
+              ContainerPath: /etc/rabbitmq/conf.d/custom.conf
               ReadOnly: false
           VolumesFrom: []
-          DependsOn:
-            - ContainerName: core
-              Condition: START
           LogConfiguration:
             LogDriver: awslogs
             Options:
@@ -1015,6 +1099,14 @@ Resources:
             TransitEncryption: ENABLED
             AuthorizationConfig:
               AccessPointId: !Ref MongoDBAccessPoint
+              IAM: ENABLED
+        - Name: mongo-init
+          EFSVolumeConfiguration:
+            FilesystemId: !Ref NetskopeCloudExchangeEFS
+            RootDirectory: /
+            TransitEncryption: ENABLED
+            AuthorizationConfig:
+              AccessPointId: !Ref MongoDBInitAccessPoint
               IAM: ENABLED
         - Name: custom_plugins
           EFSVolumeConfiguration:
@@ -1044,8 +1136,8 @@ Resources:
       PlacementConstraints: []
       RequiresCompatibilities:
         - FARGATE
-      Cpu: "4096"
-      Memory: "8192"
+      Cpu: !FindInMap [CPUMapping,!Ref PackageType, CPU]
+      Memory: !FindInMap [MemoryMapping,!Ref PackageType, Memory]
       Family: !Sub NetskopeCloudExhange3-${EnvName}
 
   NetskopeTargetGroup:
@@ -1057,16 +1149,19 @@ Resources:
       HealthCheckPath: /
       HealthCheckProtocol: HTTP
       HealthCheckTimeoutSeconds: 10
-      HealthyThresholdCount: 5
+      HealthyThresholdCount: 2
       IpAddressType: ipv4
       Name: !Sub TargetGroup-${EnvName}
       Port: 3000
       Protocol: HTTP
       ProtocolVersion: HTTP1
       TargetType: ip
+      TargetGroupAttributes:
+        - Key: deregistration_delay.timeout_seconds
+          Value: 30
       Matcher:
         HttpCode: "200"
-      UnhealthyThresholdCount: 5
+      UnhealthyThresholdCount: 3
       VpcId: !If [CreateNewResources, !Ref VPC, !Ref ExistingVPCId]
 
   AccessLogS3Bucket:
