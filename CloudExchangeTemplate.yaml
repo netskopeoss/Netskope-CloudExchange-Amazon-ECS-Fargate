@@ -964,9 +964,9 @@ Resources:
             - Name: ANALYTICS_TOKEN
               Value: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpbnN0YWxsYXRpb25faWQiOiJjMDAyIn0.w8SVrTcDjk8PkR4IcbWGwOyf6-OWfCUyOoCTgZvqHqc
             - Name: CORE_TAG
-              Value: "core-4.1.0_531_Fargate"
+              Value: "netskopetechnicalalliances/cloudexchange:core4-latest"
             - Name: UI_TAG
-              Value: "ui4-beta"
+              Value: "netskopetechnicalalliances/cloudexchange:ui4-latest"
             - Name: MAX_MAINTENANCE_WINDOW_MINUTES
               Value: "15"
             - Name: PULL_THREADS
