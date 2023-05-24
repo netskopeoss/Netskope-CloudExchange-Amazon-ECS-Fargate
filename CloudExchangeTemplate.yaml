@@ -935,7 +935,7 @@ Resources:
             StartPeriod: 60
 
         - Name: core
-          Image: "709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/core4:02232023"
+          Image: "709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/core4:05242023"
           Cpu: 0
           PortMappings: []
           Essential: true
@@ -1008,7 +1008,7 @@ Resources:
             StartPeriod: 60
 
         - Name: ui
-          Image: "709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/ui4:02232023"
+          Image: "709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/ui4:05242023"
           Cpu: 0
           PortMappings:
             - ContainerPort: 3000
@@ -1047,7 +1047,7 @@ Resources:
             StartPeriod: 60
 
         - Name: rabbitmq-stats
-          Image: "709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/rabbitmq:3.9-management"
+          Image: "709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/rabbitmq:3.11.11-management"
           Cpu: 0
           PortMappings:
             - ContainerPort: 15672
