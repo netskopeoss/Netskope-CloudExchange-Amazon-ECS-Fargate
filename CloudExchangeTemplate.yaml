@@ -52,6 +52,12 @@ Metadata:
           - HTTPPROXY
           - HTTPSPROXY
           - WhitelistIP
+
+      - Label:
+          default: "CA Certificate"
+        Parameters:
+          - CACertFlag
+          - CACertSecretName
       
     ParameterLabels:
       VPCName:
@@ -108,6 +114,10 @@ Metadata:
         default: "Enable VPC Flow Logs"
       PackageType:
         default: "Package Type"
+      CACertFlag:
+        default: "Custom CA Certificate required for Proxy?"
+      CACertSecretName:
+        default: "Name of the Custom CA Certificate placeholder AWS Secret"
 
 
 Parameters:
@@ -247,6 +257,16 @@ Parameters:
     Default: "Medium"
     AllowedValues: [ "Extra-Small", "Small", "Medium", "Large" ]
 
+  CACertFlag:
+    Description: "Select True to enable secure connection to the Proxy Server"
+    Type: String
+    Default: "False"
+    AllowedValues: [ "True", "False"]
+
+  CACertSecretName:
+    Description: "Enter the name of the secret within AWS Secrets Manager where Custom CA certificate file has been uploaded"
+    Type: String
+
 
 Mappings:
   RegionMap:
@@ -323,6 +343,16 @@ Mappings:
     Large:
       Memory: 32768
 
+  RabbitMQAvailableDiskSpace:
+    Extra-Small:
+      Disk: 42949672960
+    Small:
+      Disk: 42949672960
+    Medium:
+      Disk: 85899345920
+    Large:
+      Disk: 128849018880
+
 Conditions:
   ECSClusterFlag: !Equals
     - !Ref ExistingECSCluster
@@ -336,6 +366,10 @@ Conditions:
 
   CreateALB: !Equals
     - !Ref CreateALB
+    - "True"
+
+  AttachCACert: !Equals
+    - !Ref CACertFlag
     - "True"
 
   CreateECSTaskRole: !Equals
@@ -604,6 +638,8 @@ Resources:
             Principal:
               Service:
                 - ecs-tasks.amazonaws.com
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/SecretsManagerReadWrite"
       Path: /
       Policies:
         - PolicyName: !Sub "NetskopeCloudExchangeTaskPolicy-${AWS::StackName}"
@@ -617,6 +653,10 @@ Resources:
                   - "ecr:BatchCheckLayerAvailability"
                   - "ecr:GetDownloadUrlForLayer"
                   - "ecr:BatchGetImage"
+                  - "ssmmessages:CreateControlChannel"
+                  - "ssmmessages:CreateDataChannel"
+                  - "ssmmessages:OpenControlChannel"
+                  - "ssmmessages:OpenDataChannel"
                 Resource: "*"
 
   VPCFlowLogRole:
@@ -682,6 +722,8 @@ Resources:
           FromPort: 80
           ToPort: 80
           CidrIp: "0.0.0.0/0"
+        - IpProtocol: "-1"
+          CidrIp: 0.0.0.0/0
 
   ALBSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -785,6 +827,20 @@ Resources:
           OwnerUid: "1001"
           Permissions: "0777"
 
+  CertificateAccessPoint:
+    Type: "AWS::EFS::AccessPoint"
+    Properties:
+      FileSystemId: !Ref NetskopeCloudExchangeEFS
+      PosixUser:
+        Uid: "1001"
+        Gid: "1001"
+      RootDirectory:
+        Path: "/data/certificate"
+        CreationInfo:
+          OwnerGid: "1001"
+          OwnerUid: "1001"
+          Permissions: "0777"
+
   MongoDBInitAccessPoint:
     Type: "AWS::EFS::AccessPoint"
     Properties:
@@ -827,6 +883,20 @@ Resources:
           OwnerUid: "1001"
           Permissions: "0777"
 
+  CustomRepoAccessPoint:
+    Type: "AWS::EFS::AccessPoint"
+    Properties:
+      FileSystemId: !Ref NetskopeCloudExchangeEFS
+      PosixUser:
+        Uid: "1001"
+        Gid: "1001"
+      RootDirectory:
+        Path: "/data/repos"
+        CreationInfo:
+          OwnerGid: "1001"
+          OwnerUid: "1001"
+          Permissions: "0777"
+
   RabbitMQAccessPoint:
     Type: "AWS::EFS::AccessPoint"
     Properties:
@@ -841,10 +911,24 @@ Resources:
           OwnerUid: "1001"
           Permissions: "0777"
 
+  RabbitmqDataAccessPoint:
+    Type: "AWS::EFS::AccessPoint"
+    Properties:
+      FileSystemId: !Ref NetskopeCloudExchangeEFS
+      PosixUser:
+        Uid: "1001"
+        Gid: "1001"
+      RootDirectory:
+        Path: "/data/rabbitmq-data"
+        CreationInfo:
+          OwnerGid: "1001"
+          OwnerUid: "1001"
+          Permissions: "0777"
+
   NetskopeTaskLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub /aws/ecs/Netskope-Cloud-Exchange-3-${EnvName}
+      LogGroupName: !Sub /aws/ecs/Netskope-Cloud-Exchange-4-${EnvName}
       RetentionInDays: 3653
 
   NetskopeECSCluster:
@@ -860,12 +944,17 @@ Resources:
     Type: "AWS::ECS::TaskDefinition"
     Properties:
       ContainerDefinitions:
-        - Name: mongodb-init
-          Image: bash
+        - Name: init-container
+          Image: crestsystems/cloudexchange:aws-cli-latest
           Essential: false
           Command:
+            - /bin/bash
             - -c
-            - echo $DATA | base64 -d - | tee /docker-entrypoint-initdb.d/init.sh
+            - Fn::If:
+              - AttachCACert
+              - Fn::Sub: echo $DATA | base64 -d - | tee /docker-entrypoint-initdb.d/init.sh && aws secretsmanager get-secret-value --secret-id ${CACertSecretName} --region ${AWS::Region} --query SecretString --output text > /certificate/cert.pem
+              - echo $DATA | base64 -d - | tee /docker-entrypoint-initdb.d/init.sh
+            
           Environment:
             - Name: DATA
               Value:
@@ -875,16 +964,44 @@ Resources:
             - SourceVolume: mongo-init
               ContainerPath: /docker-entrypoint-initdb.d
               ReadOnly: false
+            - SourceVolume: certificate
+              ContainerPath: /certificate
+              ReadOnly: false
           VolumesFrom: []
           LogConfiguration:
             LogDriver: awslogs
             Options:
-              awslogs-group: !Sub /aws/ecs/Netskope-Cloud-Exchange-3-${EnvName}
+              awslogs-group: !Sub /aws/ecs/Netskope-Cloud-Exchange-4-${EnvName}
               awslogs-region: !Ref AWS::Region
               awslogs-stream-prefix: Netskope
 
+        - Name: core-init-container
+          Image: "netskopetechnicalalliances/cloudexchange:core4-latest"  
+          Essential: false
+          Command:
+            - -c
+            - echo "copy /opt/netskope/plugins data to the EFS" && cp -r /opt/netskope/plugins/* /data && ls -l /data && echo "copy /opt/netskope/repos data to the EFS" && cp -r /opt/netskope/repos/* /repos && ls -l /repos
+
+          EntryPoint: ["/bin/sh"]
+          MountPoints:
+            - SourceVolume: custom_plugins
+              ContainerPath: /data
+              ReadOnly: false
+            - SourceVolume: repos
+              ContainerPath: /repos
+              ReadOnly: false
+            
+          VolumesFrom: []
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Sub /aws/ecs/Netskope-Cloud-Exchange-4-${EnvName}
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: Netskope
+          
+
         - Name: mongodb-primary
-          Image: "709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/mongodb:5.0"
+          Image: "index.docker.io/mongo:5.0"
           User: 1001:1001
           Cpu: 0
           PortMappings:
@@ -920,7 +1037,7 @@ Resources:
           LogConfiguration:
             LogDriver: awslogs
             Options:
-              awslogs-group: !Sub /aws/ecs/Netskope-Cloud-Exchange-3-${EnvName}
+              awslogs-group: !Sub /aws/ecs/Netskope-Cloud-Exchange-4-${EnvName}
               awslogs-region: !Ref AWS::Region
               awslogs-stream-prefix: Netskope
           HealthCheck:
@@ -935,7 +1052,7 @@ Resources:
             StartPeriod: 60
 
         - Name: core
-          Image: "709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/core4:05242023"
+          Image: "netskopetechnicalalliances/cloudexchange:core4-latest"
           Cpu: 0
           PortMappings: []
           Essential: true
@@ -963,9 +1080,9 @@ Resources:
               Value: "https://reporting.netskope.tech"
             - Name: ANALYTICS_TOKEN
               Value: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpbnN0YWxsYXRpb25faWQiOiJjMDAyIn0.w8SVrTcDjk8PkR4IcbWGwOyf6-OWfCUyOoCTgZvqHqc
-            - Name: CORE_TAG
+            - Name: CORE_LATEST_VERSION_TAG
               Value: "netskopetechnicalalliances/cloudexchange:core4-latest"
-            - Name: UI_TAG
+            - Name: UI_LATEST_VERSION_TAG
               Value: "netskopetechnicalalliances/cloudexchange:ui4-latest"
             - Name: MAX_MAINTENANCE_WINDOW_MINUTES
               Value: "15"
@@ -983,32 +1100,38 @@ Resources:
               Value: "1800"
             - Name: UI_SERVICE_NAME
               Value: "localhost"
+            - Name: RABBITMQ_AVAILABLE_STORAGE
+              Value: !FindInMap [RabbitMQAvailableDiskSpace ,!Ref PackageType, Disk]
+            - Name: MANAGED_CE
+              Value: "false"
+            - Name: ENABLE_DEBUG
+              Value: true
             
           MountPoints:
             - SourceVolume: custom_plugins
-              ContainerPath: /opt/netskope/plugins/custom_plugins
+              ContainerPath: /opt/netskope/plugins
               ReadOnly: false
+            - SourceVolume: repos
+              ContainerPath: /opt/netskope/repos/
+              ReadOnly: false
+            - SourceVolume: certificate
+              ContainerPath: /usr/local/share/ca-certificates
+              ReadOnly: true
           VolumesFrom: []
           DependsOn:
             - ContainerName: mongodb-primary
               Condition: HEALTHY
+            - ContainerName: core-init-container
+              Condition: SUCCESS
           LogConfiguration:
             LogDriver: awslogs
             Options:
-              awslogs-group: !Sub /aws/ecs/Netskope-Cloud-Exchange-3-${EnvName}
+              awslogs-group: !Sub /aws/ecs/Netskope-Cloud-Exchange-4-${EnvName}
               awslogs-region: !Ref AWS::Region
               awslogs-stream-prefix: Netskope
-          HealthCheck:
-            Command:
-              - CMD-SHELL
-              - nc -vz localhost 8000 || exit 1
-            Interval: 10
-            Timeout: 10
-            Retries: 10
-            StartPeriod: 60
 
         - Name: ui
-          Image: "709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/ui4:05242023"
+          Image: "netskopetechnicalalliances/cloudexchange:ui4-latest"
           Cpu: 0
           PortMappings:
             - ContainerPort: 3000
@@ -1034,7 +1157,7 @@ Resources:
           LogConfiguration:
             LogDriver: awslogs
             Options:
-              awslogs-group: !Sub /aws/ecs/Netskope-Cloud-Exchange-3-${EnvName}
+              awslogs-group: !Sub /aws/ecs/Netskope-Cloud-Exchange-4-${EnvName}
               awslogs-region: !Ref AWS::Region
               awslogs-stream-prefix: Netskope
           HealthCheck:
@@ -1047,7 +1170,8 @@ Resources:
             StartPeriod: 60
 
         - Name: rabbitmq-stats
-          Image: "709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/rabbitmq:3.11.11-management"
+          Image: "index.docker.io/rabbitmq:3.11.11-management"
+          User: 1001:1001
           Cpu: 0
           PortMappings:
             - ContainerPort: 15672
@@ -1057,7 +1181,13 @@ Resources:
               HostPort: 5672
               Protocol: tcp
           Essential: true
-          EntryPoint: ["/bin/bash","-c","echo $RABBITMQERLCOOKIE > /var/lib/rabbitmq/.erlang.cookie && chmod 600 /var/lib/rabbitmq/.erlang.cookie && docker-entrypoint.sh rabbitmq-server"]
+          Command:
+            - sh
+            - -ec
+            - |
+              mkdir -p /var/lib/rabbitmq/mnesia/
+              chown -R 1001:1001 /var/lib/rabbitmq/mnesia/
+          EntryPoint: ["/bin/bash","-c","echo $RABBITMQERLCOOKIE > /var/lib/rabbitmq/.erlang.cookie && chmod 600 /var/lib/rabbitmq/.erlang.cookie && echo 'consumer_timeout = 86400000\ndisk_free_limit.absolute = 3GB\ntotal_memory_available_override_value = 3GB\nvm_memory_high_watermark_paging_ratio = 0.60\nvm_memory_high_watermark.relative = 0.80' > /etc/rabbitmq/conf.d/custom.conf && docker-entrypoint.sh rabbitmq-server"]
           Environment:
             - Name: RABBITMQ_DISK_FREE_LIMIT_ABSOLUTE
               Value: 1
@@ -1071,13 +1201,15 @@ Resources:
               Value: !Ref MAINTENANCEPASSWORD
           MountPoints:
             - SourceVolume: rabbitmq
-              ContainerPath: /etc/rabbitmq/conf.d/custom.conf
+              ContainerPath: /etc/rabbitmq/conf.d
               ReadOnly: false
+            - SourceVolume: rabbitmq-data
+              ContainerPath: /var/lib/rabbitmq/mnesia/
           VolumesFrom: []
           LogConfiguration:
             LogDriver: awslogs
             Options:
-              awslogs-group: !Sub /aws/ecs/Netskope-Cloud-Exchange-3-${EnvName}
+              awslogs-group: !Sub /aws/ecs/Netskope-Cloud-Exchange-4-${EnvName}
               awslogs-region: !Ref AWS::Region
               awslogs-stream-prefix: Netskope
           HealthCheck:
@@ -1116,6 +1248,14 @@ Resources:
             AuthorizationConfig:
               AccessPointId: !Ref CustomPluginsAccessPoint
               IAM: ENABLED
+        - Name: repos
+          EFSVolumeConfiguration:
+            FilesystemId: !Ref NetskopeCloudExchangeEFS
+            RootDirectory: /
+            TransitEncryption: ENABLED
+            AuthorizationConfig:
+              AccessPointId: !Ref CustomRepoAccessPoint
+              IAM: ENABLED
         - Name: ssl_certs
           EFSVolumeConfiguration:
             FilesystemId: !Ref NetskopeCloudExchangeEFS
@@ -1131,6 +1271,22 @@ Resources:
             TransitEncryption: ENABLED
             AuthorizationConfig:
               AccessPointId: !Ref RabbitMQAccessPoint
+              IAM: ENABLED
+        - Name: certificate
+          EFSVolumeConfiguration:
+            FilesystemId: !Ref NetskopeCloudExchangeEFS
+            RootDirectory: /
+            TransitEncryption: ENABLED
+            AuthorizationConfig:
+              AccessPointId: !Ref CertificateAccessPoint
+              IAM: ENABLED
+        - Name: rabbitmq-data
+          EFSVolumeConfiguration:
+            FilesystemId: !Ref NetskopeCloudExchangeEFS
+            RootDirectory: /
+            TransitEncryption: ENABLED
+            AuthorizationConfig:
+              AccessPointId: !Ref RabbitmqDataAccessPoint
               IAM: ENABLED
 
       PlacementConstraints: []
@@ -1216,12 +1372,14 @@ Resources:
                       - !Split
                         - "/"
                         - !Ref "AWS::StackId"
-      AccessControl: LogDeliveryWrite
       PublicAccessBlockConfiguration:
         BlockPublicAcls: TRUE
         BlockPublicPolicy: TRUE
         IgnorePublicAcls: TRUE
         RestrictPublicBuckets: TRUE
+      OwnershipControls:
+          Rules:
+            - ObjectOwnership: ObjectWriter
       BucketEncryption: 
         ServerSideEncryptionConfiguration: 
         - ServerSideEncryptionByDefault:
@@ -1311,6 +1469,8 @@ Resources:
           Value: true
         - Key: access_logs.s3.bucket
           Value: !Ref AccessLogS3Bucket
+        - Key: idle_timeout.timeout_seconds
+          Value: 300
 
   HTTPlistener:
     Type: "AWS::ElasticLoadBalancingV2::Listener"
@@ -1581,6 +1741,7 @@ Resources:
       TaskDefinition: !Ref taskdefinition
       LaunchType: FARGATE
       ServiceName: !Sub NetskopeCloudExchange-${EnvName}
+      EnableExecuteCommand: true
       LoadBalancers:
         - TargetGroupArn:
             !If [CreateALB, Ref: NetskopeTargetGroup, Ref: ExistingTargetGroup]

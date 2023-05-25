@@ -115,6 +115,27 @@ The following prerequisites are required to implement the Netskope Cloud Exchang
 
 6. If out of security constraints on the customer's end, one can't allow the AWS IAM role's create/modify/delete permissions to the AWS user account or the AWS IAM role through which they are executing this CloudFormation template, we have given a provision of using pre-created AWS IAM roles on the customer's end (refer to 1.2.8 and 2.2.8 sections below for more details) for the respective purposes of this automation (e.g. for ECS Task creation & execution, for read/modify VPC default Security Groups & NACL for ensuring security best practices) rather than the automation itself creating those IAM roles. Ignore this feature if they can provide AWS IAM permissions to the execution AWS user account or AWS IAM role and then, the automation itself will take care of creating the requisite IAM roles for aforementioned purposes.
 
+7. If out of the security Concern, a proxy server need to be configure while deploying the stack and Custom CA certificate required to authenticate the configured Proxy then the user needs  to create a Secret Manager and paste the cert contents into the appropriate secret. Follow the below steps to store Custom CA cert into the AWS Secrets Manager. </br>
+  
+     * Open the Secrets Manager console at https://console.aws.amazon.com/secretsmanager/
+     * Choose Store a new secret.
+     * On the Choose secret type page, do the following:</br>
+
+        * In Key/value pairs,choose the Plaintext tab and enter the Custom CA Cert value to store in the secret.
+
+        * Choose Next.
+    * On the Configure secret page, do the following:
+
+        * Enter a descriptive Secret name and Description. Secret names must contain 1-512 Unicode characters.
+        * (Optional) In the Tags section, add tags to your secret. For tagging strategies, see Tag AWS Secrets Manager secrets. Don't store sensitive information in tags because they aren't encrypted.
+        * (Optional) In Replicate secret, to replicate your secret to another AWS Region, choose Replicate secret. You can replicate your secret now or come back and replicate it later. For more information, see Replicate a secret to other Regions.
+        * Choose Next.
+    * (Optional) On the Configure rotation page, Choose Next.
+    * On the Review page, review your secret details, and then choose Store.
+
+      ![](./media/NETSKOPE-CE-PRE-CA%20-Secret.png)
+
+
 ## Deployment & Configuration Steps
 
 Using the CloudFormation template you can deploy the Netskope Cloud Exchange in two ways. Before going through the actual stack deployment process, it is highly recommended for the user to visit the [Best Practices](#best-practices-dos-and-donts) section.
@@ -300,7 +321,7 @@ Enter the VPC name and CIDR Ranges for VPC, Private, and Public Subnets accordin
 
 ![](./media/NETSKOPE-CE-Stack-NW-Details.png)
 
-1.2.10 Enter the Environment variables required for Netskope CE Deployment and click on **Next**. <br/><br/>
+1.2.10 Enter the Environment variables required for Netskope CE Deployment <br/><br/>
 **Environment variables** <br/>
 * JWT secrets: A random secure string that will be used for signing the authentication tokens.
 * Maintainance password: A maintenance password that will be used for RabbitMQ and MongoDB services (This password can be set only once).
@@ -312,30 +333,39 @@ Enter the VPC name and CIDR Ranges for VPC, Private, and Public Subnets accordin
 
 ![](./media/NETSKOPE-CE-ENV-VARS.png)
 
-1.2.11 In the **Configure stack options** section , specify tags (key-value pairs) to apply to resources in your stack. You can add up to 50 unique tags for each stack.
+1.2.11 Enter the CA Certificate details required for HTTP & HTTPS Proxy and click on **Next**. <br/><br/>
+**CA Certificate** <br/>
+
+* Custom CA Certificate required for Proxy?: Select true if configured proxy requires Custom CA Certificate to authenticate. Default values is False.
+* Name of the Custom CA Certificate placeholder AWS Secret: Enter the name of the Secret which stores Custom CA Certificate data to authenticate the configured Proxy.
+
+![](./media/NETSKOPE-CE-CA-CERT.png)
+
+
+1.2.12 In the **Configure stack options** section , specify tags (key-value pairs) to apply to resources in your stack. You can add up to 50 unique tags for each stack.
 
 ![](./media/NETSKOPE-CE-Stack-Tags.png)
 
-1.2.12 In the **Permissions** section , choose an IAM role to explicitly define how CloudFormation can create, modify, or delete resources in the stack. If you don't choose a role, CloudFormation uses permissions based on your user credentials.
+1.2.13 In the **Permissions** section , choose an IAM role to explicitly define how CloudFormation can create, modify, or delete resources in the stack. If you don't choose a role, CloudFormation uses permissions based on your user credentials.
 
 ![](./media/NETSKOPE-CE-Stack-Permissions.png)
 
-1.2.13 Expand the **Notification options** in **Advanced Options**, select the specific SNS topic ARN from the dropdown and click on **Next**. <br/>
+1.2.14 Expand the **Notification options** in **Advanced Options**, select the specific SNS topic ARN from the dropdown and click on **Next**. <br/>
 *Note - If you want to create new SNS topic, refer [Creating a new SNS topic while stack creation.](#creating-a-new-sns-topic-while-stack-creation) This step is optional but recommended as per the best practices.* 
 
 ![](./media/NETSKOPE-CE-Stack-Advanced-Options-Exisiting-ARN.png)
 
-1.2.14 Review the Stack details.
+1.2.15 Review the Stack details.
 
 ![](./media/NETSKOPE-CE-Stack-Review.png)
 
 ![](./media/NETSKOPE-CE-Stack-Create_Resources_List.png)
 
-1.2.15 Select the checkbox of acknowledgment of IAM resources and click on **Create stack**.
+1.2.16 Select the checkbox of acknowledgment of IAM resources and click on **Create stack**.
 
 ![](./media/NETSKOPE-CE-Stack-ACK.png)
 
-1.2.16 Wait for the Creation of Stack to be completed.
+1.2.17 Wait for the Creation of Stack to be completed.
 
 ![](./media/NETSKOPE-CE-Stack-In-Progress.png)
 
@@ -349,7 +379,7 @@ After the successful creation, you can see the list of resources by selecting th
 ![](./media/NETSKOPE-CE-Stack-New-Resources-1.png)
 
 
-1.2.17 To access the application, refer to [Accessing Netskope CE](#accessing-netskope-ce).
+1.2.18 To access the application, refer to [Accessing Netskope CE](#accessing-netskope-ce).
 
 *Note - Consider following before Accessing the Netskope CE*
 * *For security reasons, Network ACL default Ingress from 0.0.0.0/0 for ports 22 and 3389 have been denied to block unauthorized access to the application via SSH and RDP. To allow them, the user needs to add a respective entry to ingress rules for Network ACL based on their use case.*
@@ -492,31 +522,41 @@ To Find Existing resources details please follow the details below.
 
 ![](./media/NETSKOPE-CE-ENV-VARS.png)
 
-2.2.11 In the **Configure stack options** section, specify tags (key-value pairs) to apply to resources in your stack. You can add up to 50 unique tags for each stack.
+
+2.2.11 Enter the CA Certificate details required for HTTP & HTTPS Proxy and click on **Next**. <br/><br/>
+**CA Certificate** <br/>
+
+* Custom CA Certificate required for Proxy?: Select true if configured proxy requires Custom CA Certificate to authenticate. Default values is False.
+* Name of the Custom CA Certificate placeholder AWS Secret: Enter the name of the Secret which stores Custom CA Certificate data to authenticate the provided Proxy.
+
+![](./media/NETSKOPE-CE-CA-CERT.png)
+
+2.2.12 In the **Configure stack options** section, specify tags (key-value pairs) to apply to resources in your stack. You can add up to 50 unique tags for each stack.
+
 
 ![](./media/NETSKOPE-CE-Stack-Tags.png)
 
-2.2.12 In the **Permissions** section, choose an IAM role to explicitly define how CloudFormation can create, modify, or delete resources in the stack. If you don't choose a role, CloudFormation uses permissions based on your user credentials.
+2.2.13 In the **Permissions** section, choose an IAM role to explicitly define how CloudFormation can create, modify, or delete resources in the stack. If you don't choose a role, CloudFormation uses permissions based on your user credentials.
 
 ![](./media/NETSKOPE-CE-Stack-Permissions.png)
 
-2.2.13 Expand the **Notification options** in **Advanced Options**, select the specific SNS topic ARN from the dropdown and click on **Next**. <br/>
+2.2.14 Expand the **Notification options** in **Advanced Options**, select the specific SNS topic ARN from the dropdown and click on **Next**. <br/>
 *Note - If you want to create new SNS topic, refer [Creating a new SNS topic while stack creation.](#creating-a-new-sns-topic-while-stack-creation) This step is optional but recommended as per the best practices.*
 
 ![](./media/NETSKOPE-CE-Stack-Advanced-Options-Exisiting-ARN.png)
 
-2.2.14 Review the Stack details.
+2.2.15 Review the Stack details.
 
 ![](./media/NETSKOPE-CE-Stack-Review.png)
 
 ![](./media/NETSKOPE-CE-Stack-Existing-Resources_List.png)
 
-2.2.15 Select the checkbox of acknowledgment of IAM resources and click on **Create stack**.
+2.2.16 Select the checkbox of acknowledgment of IAM resources and click on **Create stack**.
 
 ![](./media/NETSKOPE-CE-Stack-ACK.png)
 
 
-2.2.16 Wait for the Creation of Stack to be completed.
+2.2.17 Wait for the Creation of Stack to be completed.
 
 ![](./media/NETSKOPE-CE-Stack-In-Progress.png)
 
@@ -527,7 +567,7 @@ After the successful creation, you can see the list of resources by selecting th
 ![](./media/NETSKOPE-CE-Stack-Existing-Resources-1.png)
 
 
-2.2.17 To access the application, refer to [Accessing Netskope CE](#accessing-netskope-ce).
+2.2.18 To access the application, refer to [Accessing Netskope CE](#accessing-netskope-ce).
 
 ### Finding a VPC ID
 Go to VPC Console, select **VPCs** and the relevant VPC. The VPC details page for the selected VPC opens with information including the VPC ID.
@@ -615,14 +655,14 @@ Go to ECS Console, select **Clusters** and relevant Cluster. The Cluster details
 
 
 10. Open Git Bash or terminal of end user's local system and paste the following command that initiates the port forwarding from the local system to AWS EC2 Instance.<br/>
-*Note - If ALB was not used in deployment, go to 9.2 Applocation Load Balancer is not present.*
+*Note - If ALB was not used in deployment, go to 10.2 Applocation Load Balancer is not present.*
 
-   **9.1 Application Load Balancer is present** <br/>
+   **10.1 Application Load Balancer is present** <br/>
   **Command:**   ssh -L LOCAL_HOST_PORT:ALB_DNS_NAME:LOAD_BALANCER_PORT  <br/>
   **Example:** ssh -i "test-demo.pem" ubuntu@ec2-54-193-33-60.us-west-1.compute.amazonaws.com -L 8000:internal-NetskopeCELB-netskope-ce.us-west-1.elb.amazonaws.com:80
   ![](./media/NETSKOPE-CE-Port-Forward.png)
 
-   **9.2 Application Load Balancer is not present** <br/>
+   **10.2 Application Load Balancer is not present** <br/>
    **Command:**   ssh -L LOCAL_HOST_PORT:FARGATE_TASK_PRIVATE_IP:3000 <br/>
    **Example:**   ssh -i "test-demo.pem" ubuntu@ec2-54-193-33-60.us-west-1.compute.amazonaws.com -L 8000:172.16.2.86:3000<br/>
    *Note - To find Private IP of Task created in Fargate Cluster, refer to [Finding Private IP of Task in Fargate Cluster](#finding-private-ip-of-task-in-fargate-cluster).*
@@ -632,6 +672,107 @@ Go to ECS Console, select **Clusters** and relevant Cluster. The Cluster details
 11. Type *localhost:8000* in browser and access the application.
 
 ![](./media/NETSKOPE-CE-App-Localhost-Login.png)
+
+**Access Netskope Cloud Exchange through AWS VPN**
+
+1. Generate server and client certificates and keys: Client VPN uses certificates to perform authentication between clients and the Client VPN endpoint. If you don't already have certificates to use for this purpose, they can be created using the OpenVPN easy-rsa utility. For detailed steps to generate the server and client certificates and keys using the OpenVPN easy-rsa utility, and import them into ACM see Mutual authentication.
+
+2. Create a Client VPN endpoint 
+  
+    * Open the Amazon VPC console at https://console.aws.amazon.com/vpc/.
+    * In the navigation pane, choose Client VPN Endpoints and then choose Create Client VPN endpoint.
+    ![](./media/NETSKOPE-CE-VPN-endpoint.png)
+    * (Optional) Provide a name tag and description for the Client VPN endpoint.
+    * For Client IPv4 CIDR, specify an IP address range, in CIDR notation, from which to assign client IP addresses. For example, 10.0.0.0/22.
+    ![](./mediaNETSKOPE-CE-client-vpn-endpoint-details.png)
+    * For Server certificate ARN, select the ARN of the server certificate that you generated in step 1.
+    * Under Authentication options, choose Use mutual authentication, and then for Client certificate ARN, select the ARN of the certificate you want to use as the client certificate.
+    ![](./media/Netskope-CE-Authentication.png)
+    * Enable split-tunnel checkbox.
+    ![](./media/NETSKOPE-CE-split-tunnel.png)
+    * Keep the rest of the default settings, and choose Create Client VPN endpoint.
+    ![](./media/NETSKOPE-CE-client-vpn-endpoint.png)
+
+  Note: The address range cannot overlap with the target network address range, the VPC address range, or any of the routes that will be associated with the Client VPN endpoint. The client address range must be at minimum /22 and not greater than /12 CIDR block size. You cannot change the client address range after you create the Client VPN endpoint.
+
+  Note: The server certificate must be provisioned with or imported into AWS Certificate Manager (ACM) in the same AWS Region.
+
+  3. Associate a target network
+
+      * Open the Amazon VPC console at https://console.aws.amazon.com/vpc/.
+      * In the navigation pane, choose Client VPN Endpoints.
+      * Select the Client VPN endpoint that you created in the preceding procedure, and then choose Target network associations, Associate target network.
+      * For VPC, choose the VPC in which the subnet is located.
+      * For Choose a subnet to associate, choose the subnet to associate with the Client VPN endpoint.
+      ![](./media/NETSKOPE-CE-ASSOCIATE-NETWORK.png)
+      * Choose Associate target network.
+
+  Note: If authorization rules allow it, one subnet association is enough for clients to access a VPC's entire network. You can associate additional subnets to provide high availability in case one of the Availability Zones goes down.
+
+  4. Add an authorization rule for the VPC
+    
+      * Open the Amazon VPC console at https://console.aws.amazon.com/vpc/.
+      * In the navigation pane, choose Client VPN Endpoints.
+      * Select the Client VPN endpoint to which to add the authorization rule. Choose Authorization rules, and then choose Add authorization rule.
+      * For Destination network to enable access, enter the CIDR of the network for which you want to allow access. For example, to allow access to the entire VPC, specify the IPv4 CIDR block of the VPC.
+      * For Destination network to enable access, enter the CIDR of the network for which you want to allow access. For example, to allow access to the entire VPC, specify the IPv4 CIDR block of the VPC.
+      * For Grant access to, choose Allow access to all users.
+      * (Optional) For Description, enter a brief description of the authorization rule.
+      * Choose Add authorization rule. 
+
+  Note: That the security group associated with subnet you are routing traffic through (in this case the default VPC security group) allows outbound traffic to the internet. To do this, add an outbound rule that allows all traffic to destination 0.0.0.0/0.
+
+
+  5. Download the Client VPN endpoint configuration file
+
+      * Open the Amazon VPC console at https://console.aws.amazon.com/vpc/.
+      * In the navigation pane, choose Client VPN Endpoints.
+      * Select the Client VPN endpoint that you created for this tutorial, and choose Download client configuration.
+      ![](./media/NETSKOPE-CE-DOWNLOAD-CLIENT-CERT.png)
+      * Locate the client certificate and key that were generated in Step 1. The client certificate and key can be found in the following locations in the cloned OpenVPN easy-rsa repo:
+
+        -> Client certificate — easy-rsa/easyrsa3/pki/issued/client1.domain.tld.crt
+
+        -> Client key — easy-rsa/easyrsa3/pki/private/client1.domain.tld.key 
+  
+     * Open the Client VPN endpoint configuration file using your preferred text editor. Add <cert></cert> and <key></key> tags to the file. Place the contents of the client certificate and the contents of the private key between the corresponding tags, as such:
+
+        ``` 
+        <cert>
+          Contents of client certificate (.crt) file
+        </cert>
+
+        <key>
+          Contents of private key (.key) file
+        </key>
+
+        ```
+      * Locate the line that specifies the Client VPN endpoint DNS name, and prepend a random string to it so that the format is random_string.displayed_DNS_name. For example:
+        ```
+        Original DNS name: cvpn-endpoint-0102bc4c2eEXAMPLE.prod.clientvpn.us-west-2.amazonaws.com
+
+        Modified DNS name: asdfa.cvpn-endpoint-0102bc4c2eEXAMPLE.prod.clientvpn.us-west-2.amazonaws.com
+        ```
+
+      * Save and close the Client VPN endpoint configuration file.
+      * Distribute the Client VPN endpoint configuration file to your end users.
+
+  6. Connect to the Client VPN endpoint
+
+      You can connect to the Client VPN endpoint using the AWS provided client or another OpenVPN-based client application and the configuration file that you just created. For more information, see the [AWS Client VPN User Guide](https://docs.aws.amazon.com/vpn/latest/clientvpn-user/client-vpn-user-what-is.html).
+
+      ![](./media/NETSKOPE-CE-AWS-VPN-CONNECT.png)
+
+  7. Access Netskope CE UI
+
+      * Open the Amazon EC2 console.
+      * Navigate to the EC2 Dashboard and click on "Load Balancers" in the navigation pane.
+      * Locate and select the desired load balancer from the list.
+      * In the load balancer details, you will find the DNS name listed. It typically appears in the format of [load_balancer_name].[region].elb.amazonaws.com.
+      * Copy the DNS name and use it to access your application.
+
+        ![](./media/NETSKOPE-CE-UI-ACCESS.png)
+
 
 ### Finding Private IP of Task in Fargate Cluster
 Go to ECS Console, select **Clusters** and relevant Cluster. The Cluster details page for the selected Cluster opens the information. Click on **Tasks** tab and select the relevant task.
@@ -851,25 +992,29 @@ This section depicts the container platforms and CE version on which we have tes
 
 | Container Name | Version                                           | 
 | ---------------| ------- |
-| Core           | 4.1.0        | 
-| UI           | 4.1.0        | 
+| Core           | 4.2.0        | 
+| UI           | 4.2.0        | 
 | MongoDB        | DockerHub Official 5.0        | 
-| RabbitMQ        | DockerHub Official 3.9       |
+| RabbitMQ        | DockerHub Official 3.11.11-management       |
 
-**Note:** The current **Latest CFT** is compatible with only CE v4.1.0 onwards (as mentioned in the container images combination of the above table) and it is not compatible with previous CE versions. The reason for the same is because of the MongoDB and RabbitMQ images changed from Bitnami to DockerHub Official ones starting CE v4.1.0.
+**Note:** The current **4.2.0 (Latest) CFT** is compatible with only CE v4.2.0 (vertically scaled model) and onwards (as mentioned in the container images combination of the above table) and it is not compatible with older CE versions.
 
 ## Upgrades Testing Matrix
 
 We have tested the below upgrade scenarios with data staying persistent.
 
-| Container Name | From Version (deployed using Old CFT) | To Version (Upgrade 1 deployed using Old CFT) | To Version (Upgrade 2 deployed using Latest CFT) |
-| ---------------| ------- | ------- | ------- |
-| Core           | 3.4.0        | 4.0.0 | 4.1.0 |  
-| UI           | 3.4.0        | 4.0.0 | 4.1.0 | 
-| MongoDB        | Bitnami 4.4        | Bitnami 4.4 | DockerHub Official 5.0 |
-| RabbitMQ        | Bitnami 3.9       | Bitnami 3.9 | DockerHub Official 3.9 |
+| Container Name | From Version (deployed using 3.4.0/4.0.0 CFT) | To Version (Upgrade 1 deployed using 3.4.0/4.0.0 CFT) | To Version (Upgrade 2 deployed using 4.1.0 CFT) | To Version (Upgrade 3 deployed using 4.2.0 (Latest) CFT) |
+| ---------------| ------- | ------- | ------- |------- |
+| Core           | 3.4.0        | 4.0.0 | 4.1.0 | 4.2.0 |
+| UI           | 3.4.0        | 4.0.0 | 4.1.0 | 4.2.0 |
+| MongoDB        | Bitnami 4.4        | Bitnami 4.4 | DockerHub Official 5.0 | DockerHub Official 5.0 |
+| RabbitMQ        | Bitnami 3.9       | Bitnami 3.9 | DockerHub Official 3.9 | DockerHub Official 3.11.11-management |
 
-**Note:** With ***Old CFT***, we are referring to the AWS CloudFormation Template version respective to the main branch commit hash ***bf71b9d1799ea8239da5bd2c29aee94725f9b46f***. With Latest CFT, we are referring to the currently hosted latest AWS CloudFormation Template code in the main branch of this repository.
+**Notes:**
+* With ***3.4.0/4.0.0 CFT***, we are referring to the AWS CloudFormation Template version respective to the main branch commit hash ***[bf71b9d1799ea8239da5bd2c29aee94725f9b46f](https://github.com/netskopeoss/Netskope-CloudExchange-Amazon-ECS-Fargate/tree/bf71b9d1799ea8239da5bd2c29aee94725f9b46f)***.
+* With ***4.1.0 CFT***, we are referring to the AWS CloudFormation Template version respective to the main branch commit hash ***[c4bef75e0a2634a224111fd5f8f49cb8f2220a6e](https://github.com/netskopeoss/Netskope-CloudExchange-Amazon-ECS-Fargate/tree/c4bef75e0a2634a224111fd5f8f49cb8f2220a6e)***.
+* With ***4.2.0 (Latest) CFT***, we are referring to the currently hosted latest AWS CloudFormation Template code in the [main](https://github.com/netskopeoss/Netskope-CloudExchange-Amazon-ECS-Fargate) branch of this repository.
+
 
 ## FAQs
 
