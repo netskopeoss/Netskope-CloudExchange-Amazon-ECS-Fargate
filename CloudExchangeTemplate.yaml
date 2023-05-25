@@ -945,7 +945,7 @@ Resources:
     Properties:
       ContainerDefinitions:
         - Name: init-container
-          Image: crestsystems/cloudexchange:aws-cli-latest
+          Image: "709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/cloudexchange:aws-cli-latest"
           Essential: false
           Command:
             - /bin/bash
@@ -976,7 +976,7 @@ Resources:
               awslogs-stream-prefix: Netskope
 
         - Name: core-init-container
-          Image: "netskopetechnicalalliances/cloudexchange:core4-latest"  
+          Image: "709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/core4:05242023"  
           Essential: false
           Command:
             - -c
@@ -1001,7 +1001,7 @@ Resources:
           
 
         - Name: mongodb-primary
-          Image: "index.docker.io/mongo:5.0"
+          Image: "709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/mongodb:5.0"
           User: 1001:1001
           Cpu: 0
           PortMappings:
@@ -1052,7 +1052,7 @@ Resources:
             StartPeriod: 60
 
         - Name: core
-          Image: "netskopetechnicalalliances/cloudexchange:core4-latest"
+          Image: "709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/core4:05242023"
           Cpu: 0
           PortMappings: []
           Essential: true
@@ -1131,7 +1131,7 @@ Resources:
               awslogs-stream-prefix: Netskope
 
         - Name: ui
-          Image: "netskopetechnicalalliances/cloudexchange:ui4-latest"
+          Image: "709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/ui4:05242023"
           Cpu: 0
           PortMappings:
             - ContainerPort: 3000
@@ -1170,7 +1170,7 @@ Resources:
             StartPeriod: 60
 
         - Name: rabbitmq-stats
-          Image: "index.docker.io/rabbitmq:3.11.11-management"
+          Image: "709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/rabbitmq:3.11.11-management"
           User: 1001:1001
           Cpu: 0
           PortMappings:
