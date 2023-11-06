@@ -976,7 +976,7 @@ Resources:
               awslogs-stream-prefix: Netskope
 
         - Name: core-init-container
-          Image: "709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/core4:05242023"  
+          Image: "709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/cloudexchange:aws-cli-11062023"  
           Essential: false
           Command:
             - -c
@@ -1052,7 +1052,7 @@ Resources:
             StartPeriod: 60
 
         - Name: core
-          Image: "709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/core4:05242023"
+          Image: "709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/core5:11062023"
           Cpu: 0
           PortMappings: []
           Essential: true
@@ -1081,9 +1081,9 @@ Resources:
             - Name: ANALYTICS_TOKEN
               Value: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpbnN0YWxsYXRpb25faWQiOiJjMDAyIn0.w8SVrTcDjk8PkR4IcbWGwOyf6-OWfCUyOoCTgZvqHqc
             - Name: CORE_LATEST_VERSION_TAG
-              Value: "netskopetechnicalalliances/cloudexchange:core4-latest"
+              Value: "netskopetechnicalalliances/cloudexchange:core5-latest"
             - Name: UI_LATEST_VERSION_TAG
-              Value: "netskopetechnicalalliances/cloudexchange:ui4-latest"
+              Value: "netskopetechnicalalliances/cloudexchange:ui5-latest"
             - Name: MAX_MAINTENANCE_WINDOW_MINUTES
               Value: "15"
             - Name: PULL_THREADS
@@ -1131,7 +1131,7 @@ Resources:
               awslogs-stream-prefix: Netskope
 
         - Name: ui
-          Image: "709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/ui4:05242023"
+          Image: "709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/ui5:11062023"
           Cpu: 0
           PortMappings:
             - ContainerPort: 3000
@@ -1170,7 +1170,7 @@ Resources:
             StartPeriod: 60
 
         - Name: rabbitmq-stats
-          Image: "709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/rabbitmq:3.11.11-management"
+          Image: "709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/rabbitmq:3.12.6-management"
           User: 1001:1001
           Cpu: 0
           PortMappings:

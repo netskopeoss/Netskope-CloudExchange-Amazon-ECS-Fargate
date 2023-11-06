@@ -242,9 +242,9 @@ If you have your existing resources available, refer [ Customize Infrastructure 
           "ecr:GetDownloadUrlForLayer",
           "ecr:BatchGetImage",
           "logs:CreateLogStream",
-          "logs:PutLogEvents"
+          "logs:PutLogEvents",
           "elasticfilesystem:ClientMount",
-          "elasticfilesystem:ClientWrite",
+          "elasticfilesystem:ClientWrite"
         ],
         "Resource": "*"
       }
@@ -481,9 +481,9 @@ After the successful creation, you can see the list of resources by selecting th
           "ecr:GetDownloadUrlForLayer",
           "ecr:BatchGetImage",
           "logs:CreateLogStream",
-          "logs:PutLogEvents"
+          "logs:PutLogEvents",
           "elasticfilesystem:ClientMount",
-          "elasticfilesystem:ClientWrite",
+          "elasticfilesystem:ClientWrite"
         ],
         "Resource": "*"
       }
@@ -992,28 +992,29 @@ This section depicts the container platforms and CE version on which we have tes
 
 | Container Name | Version                                           | 
 | ---------------| ------- |
-| Core           | 4.2.0        | 
-| UI           | 4.2.0        | 
+| Core           | 5.0.0        | 
+| UI           | 5.0.0        | 
 | MongoDB        | DockerHub Official 5.0        | 
-| RabbitMQ        | DockerHub Official 3.11.11-management       |
+| RabbitMQ        | DockerHub Official 3.12.6-management       |
 
-**Note:** The current **4.2.0 (Latest) CFT** is compatible with only CE v4.2.0 (vertically scaled model) and onwards (as mentioned in the container images combination of the above table) and it is not compatible with older CE versions.
+**Note:** The current **5.0.0 (Latest) CFT** is compatible with only CE v4.2.0 (vertically scaled model) and onwards (as mentioned in the container images combination of the above table) and it is not compatible with older CE versions.
 
 ## Upgrades Testing Matrix
 
 We have tested the below upgrade scenarios with data staying persistent.
 
-| Container Name | From Version (deployed using 3.4.0/4.0.0 CFT) | To Version (Upgrade 1 deployed using 3.4.0/4.0.0 CFT) | To Version (Upgrade 2 deployed using 4.1.0 CFT) | To Version (Upgrade 3 deployed using 4.2.0 (Latest) CFT) |
-| ---------------| ------- | ------- | ------- |------- |
-| Core           | 3.4.0        | 4.0.0 | 4.1.0 | 4.2.0 |
-| UI           | 3.4.0        | 4.0.0 | 4.1.0 | 4.2.0 |
-| MongoDB        | Bitnami 4.4        | Bitnami 4.4 | DockerHub Official 5.0 | DockerHub Official 5.0 |
-| RabbitMQ        | Bitnami 3.9       | Bitnami 3.9 | DockerHub Official 3.9 | DockerHub Official 3.11.11-management |
+| Container Name | From Version (deployed using 3.4.0/4.0.0 CFT) | To Version (Upgrade 1 deployed using 3.4.0/4.0.0 CFT) | To Version (Upgrade 2 deployed using 4.1.0 CFT) | To Version (Upgrade 3 deployed using 4.2.0 CFT) | To Version (Upgrade 4 deployed using 5.0.0 (latest) CFT) |
+| ---------------| ------- | ------- | ------- |------- |-----|
+| Core           | 3.4.0        | 4.0.0 | 4.1.0 | 4.2.0 | 5.0.0
+| UI           | 3.4.0        | 4.0.0 | 4.1.0 | 4.2.0 | 5.0.0
+| MongoDB        | Bitnami 4.4        | Bitnami 4.4 | DockerHub Official 5.0 | DockerHub Official 5.0 | DockerHub Official 5.0  
+| RabbitMQ        | Bitnami 3.9       | Bitnami 3.9 | DockerHub Official 3.9 | DockerHub Official 3.11.11-management | DockerHub Official 3.12.6-management 
 
 **Notes:**
 * With ***3.4.0/4.0.0 CFT***, we are referring to the AWS CloudFormation Template version respective to the main branch commit hash ***[bf71b9d1799ea8239da5bd2c29aee94725f9b46f](https://github.com/netskopeoss/Netskope-CloudExchange-Amazon-ECS-Fargate/tree/bf71b9d1799ea8239da5bd2c29aee94725f9b46f)***.
 * With ***4.1.0 CFT***, we are referring to the AWS CloudFormation Template version respective to the main branch commit hash ***[c4bef75e0a2634a224111fd5f8f49cb8f2220a6e](https://github.com/netskopeoss/Netskope-CloudExchange-Amazon-ECS-Fargate/tree/c4bef75e0a2634a224111fd5f8f49cb8f2220a6e)***.
-* With ***4.2.0 (Latest) CFT***, we are referring to the currently hosted latest AWS CloudFormation Template code in the [main](https://github.com/netskopeoss/Netskope-CloudExchange-Amazon-ECS-Fargate) branch of this repository.
+* With ***4.2.0 CFT***, we are referring to the AWS CloudFormation Template version respective to the main branch commit hash ***[4e0879247a58f7f10c0cbef010239ba3912cddea](https://github.com/netskopeoss/Netskope-CloudExchange-Amazon-ECS-Fargate/tree/4e0879247a58f7f10c0cbef010239ba3912cddea)***.
+* With ***5.0.0 (Latest) CFT***, we are referring to the currently hosted latest AWS CloudFormation Template code in the [main](https://github.com/netskopeoss/Netskope-CloudExchange-Amazon-ECS-Fargate) branch of this repository.
 
 
 ## FAQs
