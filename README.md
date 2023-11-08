@@ -969,10 +969,10 @@ Please follow below steps for removing deletion protection in ALB.<br/>
     # Replace <tag> to "Image" tag from the Cloudformation template "taskdefinition" section 
 
     $ CONTAINER_IMAGES="
-    709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/ui3:<tag>,
-    709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/core3:<tag>,
-    709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/mongodb:<tag>,
-    709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/rabbitmq:<tag>" 
+    709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/ui5:11062023,
+    709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/core5:11062023,
+    709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/mongodb:5.0,
+    709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/rabbitmq:3.12.6-management" 
 
     $ for i in $(echo $CONTAINER_IMAGES | sed "s/,/ /g"); do docker pull $i; done
 
