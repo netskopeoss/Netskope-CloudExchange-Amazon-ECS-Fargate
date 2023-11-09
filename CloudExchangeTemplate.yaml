@@ -976,7 +976,7 @@ Resources:
               awslogs-stream-prefix: Netskope
 
         - Name: core-init-container
-          Image: "709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/cloudexchange:aws-cli-11062023"  
+          Image: "709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/core5:11062023"  
           Essential: false
           Command:
             - -c
