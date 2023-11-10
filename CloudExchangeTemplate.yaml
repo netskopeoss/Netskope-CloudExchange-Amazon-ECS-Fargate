@@ -945,7 +945,7 @@ Resources:
     Properties:
       ContainerDefinitions:
         - Name: init-container
-          Image: "709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/cloudexchange:aws-cli-11062023"
+          Image: "709825985650.dkr.ecr.us-east-1.amazonaws.com/netskope/cloudexchange:aws-cli-latest"
           Essential: false
           Command:
             - /bin/bash
